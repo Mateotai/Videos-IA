@@ -13,7 +13,7 @@ import wave
 import os
 
 SR = 44100
-DUR = 24.0
+DUR = 26.0
 N = int(SR * DUR)
 mix = np.zeros((N, 2))
 
@@ -263,6 +263,29 @@ add(chime(note_hz(m('C6'))), 17.3, 0.4)                   # recibe la mitad
 for k in range(6):
     add(crunch() * 0.3, 18.1 + k * 0.45, 0.4, (-1) ** k * 0.3)  # ñam ñam
 add(whoosh(0.6), 20.7, 0.5)
+
+# ---------- extras de retención ----------
+add(whoosh(0.5), 0.15, 0.7)                               # zoom de salida del gancho
+add(pop(), 0.35, 0.5)                                     # ojos de corazón
+def squeak():
+    n = int(0.12 * SR); t = np.arange(n) / SR
+    f = 2200 + 900 * np.sin(np.pi * t / 0.12)
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, 0.002, 0.05)
+for tt in (1.15, 5.15, 8.15, 11.45):                      # el ratón se asoma
+    add(squeak(), tt, 0.25, 0.5)
+    add(squeak(), tt + 0.13, 0.2, 0.5)
+add(boing(0.4, 200, 900), 23.45, 0.5)                     # ¡al ataque!
+add(boing(0.4, 260, 1100), 23.5, 0.4, 0.4)
+add(thud(), 24.15, 0.6)
+# fanfarria final "¿parte 2?"
+for nn, tn in [('G5', 24.35), ('C6', 24.5), ('E6', 24.65), ('G6', 24.8)]:
+    add(marimba(note_hz(m(nn)), 1.0, 0.4), tn, 0.35)
+add(crash(), 24.35, 0.6)
+for nn in ['C3', 'E4', 'G4', 'C5']:
+    add(pad([note_hz(m(nn))], 1.6), 24.35, 0.1)
+for i in range(6):
+    tb = 24.35 + i * 0.25
+    add(kick(), tb, 0.5) if i % 2 == 0 else add(clap(), tb, 0.4)
 
 # ---------- master ----------
 fade = np.ones(N)
