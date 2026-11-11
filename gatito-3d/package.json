@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fontsource/fredoka": "^5.1.0",
     "three": "^0.169.0"
   }
 }
