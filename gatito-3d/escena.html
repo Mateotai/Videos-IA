@@ -24,6 +24,9 @@
 import * as THREE from 'three';
 
 const W = 1080, H = 1920, DURATION = 26;
+// ?global -> versión sin idioma (emojis + onomatopeyas) con tarjeta final de marca
+const GLOBAL = new URLSearchParams(location.search).has('global');
+const T = (es, gl) => GLOBAL ? gl : es;
 const out = document.getElementById('out');
 const octx = out.getContext('2d');
 const overlay = document.createElement('canvas'); overlay.width = W; overlay.height = H;
@@ -161,12 +164,14 @@ const boxTex = canvasTex(256, 256, (c, w, h) => {
   c.fillStyle = '#c18e52'; c.fillRect(0, 0, w, 14);
   c.fillStyle = '#efd7a6'; c.fillRect(104, 0, 48, 90);
   c.fillStyle = '#5a3d22'; c.font = 'bold 54px sans-serif'; c.textAlign = 'center'; c.fillText('↑ ↑', 128, 190);
-  c.font = 'bold 22px sans-serif'; c.fillText('FRÁGIL', 128, 230);
+  c.font = 'bold 22px sans-serif'; if (!GLOBAL) c.fillText('FRÁGIL', 128, 230); else { c.font = '30px "Noto Color Emoji"'; c.fillText('🐾', 128, 232); }
 });
 const labelTex = canvasTex(512, 160, (c, w, h) => {
   c.fillStyle = '#fff7e6'; c.beginPath(); c.roundRect(4, 4, w - 8, h - 8, 30); c.fill();
   c.lineWidth = 8; c.strokeStyle = '#2b2233'; c.stroke();
-  c.fillStyle = '#2b2233'; c.font = '900 78px Inter, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('GALLETAS', w / 2, h / 2 + 4);
+  c.fillStyle = '#2b2233'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  if (GLOBAL) { c.font = '86px "Noto Color Emoji"'; c.fillText('🍪 ❤️ 🍪', w / 2, h / 2 + 6); }
+  else { c.font = '900 78px Inter, sans-serif'; c.fillText('GALLETAS', w / 2, h / 2 + 4); }
 });
 const skyTex = canvasTex(512, 512, (c, w, h) => {
   const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#6cc8ff'); g.addColorStop(1, '#c6ecff');
@@ -691,7 +696,7 @@ function caption(text, t, t0, t1, opts = {}) {
   const s = easeOutBack(pIn) * (1 - pOut * .3);
   const size = opts.size || 104, y = opts.y || 250;
   ctx.save(); ctx.globalAlpha = 1 - pOut; ctx.translate(W / 2, y); ctx.scale(s, s); ctx.rotate(opts.rot || 0);
-  ctx.font = `900 ${size}px Inter, "DejaVu Sans", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `900 ${size}px Inter, "Noto Color Emoji", "DejaVu Sans", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
   const lines = text.split('\n');
   lines.forEach((ln, i) => {
@@ -709,7 +714,7 @@ function pill(text, t, t0, t1) {
   if (t < t0 || t > t1) return;
   const a = 1 - seg(t, t1 - .2, t1), pulse = 1 + Math.sin(t * 9) * .04;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, 420); ctx.scale(pulse, pulse);
-  ctx.font = '900 50px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '900 50px Inter, "Noto Color Emoji", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   const w = ctx.measureText(text + ' ⬇').width + 70;
   ctx.beginPath(); ctx.roundRect(-w / 2, -40, w, 80, 40); ctx.fillStyle = '#ff3d5f'; ctx.fill(); ctx.lineWidth = 7; ctx.strokeStyle = INK; ctx.stroke();
   ctx.fillStyle = '#fff'; ctx.fillText(text + ' ⬇', 0, 2);
@@ -834,25 +839,32 @@ function render(t) {
     ctx.restore();
   }
   comicWord('!', t, 12.7, 13.6, new THREE.Vector3(cx3 + .3, cy3 + 3.2, cz3), 170, '#ff3d5f');
-  comicWord('¡CRAC!', t, 16.4, 17.1, new THREE.Vector3(U(800), V(TABLE_TOP) + 2.3, Z_CHAR), 110, '#ffd93d', -.1);
+  comicWord(T('¡CRAC!', 'CRACK!'), t, 16.4, 17.1, new THREE.Vector3(U(800), V(TABLE_TOP) + 2.3, Z_CHAR), 110, '#ffd93d', -.1);
   const fl = Math.max(t > 12.7 && t < 13.4 ? 1 - seg(t, 13.1, 13.4) : 0, t > 21.4 && t < 22.4 ? 1 - seg(t, 22.0, 22.4) : 0);
   if (fl > 0) focusLines(t, fl);
   const flash = Math.max(t > 4.85 && t < 5.0 ? 1 - seg(t, 4.85, 5.0) : 0, t > 21.4 && t < 21.58 ? 1 - seg(t, 21.4, 21.58) : 0);
   if (flash > 0) { ctx.fillStyle = `rgba(255,255,255,${flash * .7})`; ctx.fillRect(0, 0, W, H); }
-  caption('Él solo quería\nUNA galleta', t, 0, 2.5, { highlight: true });
-  pill('ESPERA AL FINAL', t, 0.0, 3.4);
-  caption('Intento #1', t, 2.6, 3.9);
-  caption('Intento #2', t, 3.95, 5.5);
-  caption('PLAN B', t, 6.6, 9.2, { highlight: true, size: 130 });
-  caption('¡Casi!', t, 11.2, 12.6);
-  caption('NOOOO', t, 12.75, 14.2, { size: 150, rot: -.05 });
-  caption('¿Mitad y mitad?', t, 15.7, 17.9);
-  caption('Amigos\n> galletas', t, 18.0, 20.6, { highlight: true });
-  caption('...un momento', t, 20.8, 21.7, { size: 96, y: 1420 });
-  caption('¿¡EN SERIO!?', t, 21.8, 23.25, { size: 120, highlight: true, y: 1420 });
-  caption('¡AL ATAQUE!', t, 23.3, 24.3, { size: 130, y: 1420, rot: .04 });
-  caption('¿PARTE 2?', t, 24.35, 26.01, { size: 150, highlight: true, y: 1400 });
-  caption('¿Viste al ratón\ndesde el principio?', t, 24.7, 26.01, { size: 62, y: 1590 });
+  caption(T('Él solo quería\nUNA galleta', '😻 🍪'), t, 0, 2.5, { highlight: true, size: T(104, 150) });
+  pill(T('ESPERA AL FINAL', '👀'), t, 0.0, 3.4);
+  caption(T('Intento #1', '#1'), t, 2.6, 3.9, { size: T(104, 140) });
+  caption(T('Intento #2', '#2  😵'), t, 3.95, 5.5, { size: T(104, 140) });
+  caption(T('PLAN B', '💡 PLAN B'), t, 6.6, 9.2, { highlight: true, size: 130 });
+  caption(T('¡Casi!', '🤏'), t, 11.2, 12.6, { size: T(104, 150) });
+  caption(T('NOOOO', 'NOOOO 😭'), t, 12.75, 14.2, { size: 150, rot: -.05 });
+  caption(T('¿Mitad y mitad?', '🍪 ½ + ½ ?'), t, 15.7, 17.9, { size: T(104, 120) });
+  caption(T('Amigos\n> galletas', '🐱 ❤️ 🐭'), t, 18.0, 20.6, { highlight: true, size: T(104, 140) });
+  caption(T('...un momento', '👀 . . .'), t, 20.8, 21.7, { size: 96, y: 1420 });
+  caption(T('¿¡EN SERIO!?', '🍪 x100 !?'), t, 21.8, 23.25, { size: 120, highlight: true, y: 1420 });
+  caption(T('¡AL ATAQUE!', 'YAAAY! 🎉'), t, 23.3, 24.3, { size: 130, y: 1420, rot: .04 });
+  if (!GLOBAL) {
+    caption('¿PARTE 2?', t, 24.35, 26.01, { size: 150, highlight: true, y: 1400 });
+    caption('¿Viste al ratón\ndesde el principio?', t, 24.7, 26.01, { size: 62, y: 1590 });
+  } else if (t >= 24.35) {
+    // tarjeta final de marca
+    const p = easeOutBack(seg(t, 24.35, 24.65));
+    ctx.save(); ctx.translate(W / 2, 1390); ctx.scale(p, p); brandTitle(ctx, 0, 0, 150, -.03); ctx.restore();
+    if (t > 24.8) caption('PART 2 ⏳', t, 24.8, 26.01, { size: 70, y: 1560 });
+  }
   ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(0, H - 12, W, 12);
   ctx.fillStyle = '#ffd93d'; ctx.fillRect(0, H - 12, W * clamp(t / DURATION), 12);
 

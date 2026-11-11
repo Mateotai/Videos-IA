@@ -29,9 +29,10 @@ const server = http.createServer((req, res) => {
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
   page.on('pageerror', e => console.error('PAGE ERROR', e));
   page.on('console', m => { if (m.type() === 'error') console.error('console:', m.text()); });
-  await page.goto(`http://127.0.0.1:${port}/escena.html`);
+  const GLOBAL = process.argv.includes('--global');
+  await page.goto(`http://127.0.0.1:${port}/escena.html${GLOBAL ? '?global' : ''}`);
   await page.waitForFunction(() => window.ready === true, null, { timeout: 120000 });
-  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(async () => { await document.fonts.load('700 100px Fredoka'); await document.fonts.load('900 100px Inter'); await document.fonts.ready; });
   const duration = await page.evaluate(() => window.DURATION);
 
   const grab = async t => {
@@ -46,7 +47,7 @@ const server = http.createServer((req, res) => {
     const total = Math.round(duration * FPS);
     const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(FPS), '-i', '-',
       '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-preset', 'slow', '-crf', '17', '-movflags', '+faststart',
-      path.join(OUT, 'gatito3d_sin_audio.mp4')], { stdio: ['pipe', 'inherit', 'inherit'] });
+      path.join(OUT, GLOBAL ? 'global_sin_audio.mp4' : 'gatito3d_sin_audio.mp4')], { stdio: ['pipe', 'inherit', 'inherit'] });
     const t0 = Date.now();
     for (let i = 0; i < total; i++) {
       const buf = await grab(i / FPS);
