@@ -1,6 +1,7 @@
 // Renderiza serie.html fotograma a fotograma y lo codifica con ffmpeg.
 //   node render.js                    -> salida/serie_sin_audio.mp4 (60 fps)
 //   node render.js --stills 0,3,12.5  -> salida/still_*.jpg
+//   node render.js --page ep2.html --out ep2_sin_audio.mp4
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 const http = require('http'), path = require('path'), fs = require('fs');
@@ -19,7 +20,8 @@ const server = http.createServer((req, res) => {
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
   page.on('pageerror', e => console.error('PAGE ERROR', e));
   page.on('console', m => { if (m.type() === 'error') console.error('console:', m.text()); });
-  await page.goto(`http://127.0.0.1:${server.address().port}/serie.html`);
+  const PAGE = arg('--page', 'serie.html');
+  await page.goto(`http://127.0.0.1:${server.address().port}/${PAGE}`);
   await page.waitForFunction(() => window.ready === true, null, { timeout: 120000 });
   await page.evaluate(async () => { await document.fonts.load('700 100px Fredoka'); await document.fonts.load('600 50px Fredoka'); await document.fonts.ready; });
   const duration = await page.evaluate(() => window.DURATION);
@@ -31,7 +33,7 @@ const server = http.createServer((req, res) => {
     const total = Math.round(duration * FPS);
     const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(FPS), '-i', '-',
       '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-preset', 'slow', '-crf', '17', '-movflags', '+faststart',
-      path.join(OUT, 'serie_sin_audio.mp4')], { stdio: ['pipe', 'inherit', 'inherit'] });
+      path.join(OUT, arg('--out', 'serie_sin_audio.mp4'))], { stdio: ['pipe', 'inherit', 'inherit'] });
     const t0 = Date.now();
     for (let i = 0; i < total; i++) {
       const buf = await grab(i / FPS);
