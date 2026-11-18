@@ -4,7 +4,71 @@
 // =====================================================================
 const W = 1080, H = 1920;
 const cv = document.getElementById('c');
-const ctx = cv.getContext('2d');
+const octx = cv.getContext('2d');                       // salida final (con desenfoque de movimiento)
+const work = document.createElement('canvas'); work.width = W; work.height = H;
+const layer = document.createElement('canvas'); layer.width = W; layer.height = H;
+const lctx = layer.getContext('2d');
+let ctx = work.getContext('2d');                        // lienzo de trabajo de cada sub-fotograma
+
+// ---------- animación secundaria (muelles) y fundido de expresiones ----------
+const SECS = {}, EXPRS = {}, SEC0 = { hx: 0, hy: 0, ear: 0, tail: 0, sq: 0, lean: 0, tilt: 0 };
+function buildSecondary(fn) {
+  const dt = 1 / 240, N = Math.ceil((DURATION + .5) / dt), F = ['hx', 'hy', 'ear', 'tail', 'sq', 'lean', 'tilt'];
+  const A = {}; for (const f of F) A[f] = new Float32Array(N);
+  let hx = 0, hvx = 0, hy = 0, hvy = 0, sq = 0, sv = 0, ear = 0, ev = 0, tl = 0, tv = 0, ld = 0, lv = 0, ti = 0, tiv = 0;
+  let p = fn(0), pvx = 0, pvy = 0;
+  const cl = (v, m) => Math.max(-m, Math.min(m, v));
+  for (let i = 0; i < N; i++) {
+    const t = i * dt, st = fn(t);
+    let vx = (st.x - p.x) / dt, vy = (st.y - p.y) / dt;
+    if (i === 0 || Math.abs(st.x - p.x) > 60 || Math.abs(st.y - p.y) > 60) { vx = pvx; vy = pvy; }   // teletransportes: ignorar
+    vx = cl(vx, 2600); vy = cl(vy, 2600);
+    const dvx = vx - pvx, dvy = vy - pvy;
+    hvx += -dvx * .2; hvy += -dvy * .16;                                  // la cabeza se queda atrás
+    hvx += (-300 * hx - 12 * hvx) * dt; hvy += (-300 * hy - 12 * hvy) * dt;
+    hx = cl(hx + hvx * dt, 28); hy = cl(hy + hvy * dt, 26);
+    if (pvy > 200 && dvy < 0) sv += dvy * .0026;                          // aplastar al aterrizar
+    sv += (-420 * sq - 11 * sv) * dt; sq = cl(sq + sv * dt, .3);
+    ev += dvy * .0011 + Math.abs(dvx) * .0004;                            // orejas que rebotan
+    ev += (-260 * ear - 7 * ev) * dt; ear = cl(ear + ev * dt, .6);
+    tv += -dvx * .0016 * Math.sign(st.dir || 1) + dvy * .0006;            // cola con inercia
+    tv += (-150 * tl - 5 * tv) * dt; tl = cl(tl + tv * dt, 1.1);
+    lv += -dvx * .0003;                                                   // el cuerpo se inclina al frenar
+    lv += (-220 * ld - 11 * lv) * dt; ld = cl(ld + lv * dt, .25);
+    tiv += dvx * .00035 + dvy * .0002;                                    // la cabeza se ladea
+    tiv += (-250 * ti - 10 * tiv) * dt; ti = cl(ti + tiv * dt, .3);
+    A.hx[i] = hx; A.hy[i] = hy; A.ear[i] = ear; A.tail[i] = tl; A.sq[i] = sq + Math.min(.12, Math.abs(vy) * .00009); A.lean[i] = ld; A.tilt[i] = ti;
+    p = st; pvx = vx; pvy = vy;
+  }
+  A.N = N; return A;
+}
+function secAt(name, t) {
+  const A = SECS[name]; if (!A) return SEC0;
+  const f = clamp(t, 0, DURATION) * 240, i = Math.min(Math.floor(f), A.N - 2), a = f - i, r = {};
+  for (const k in SEC0) r[k] = A[k][i] * (1 - a) + A[k][i + 1] * a;
+  return r;
+}
+function buildExpr(fn) { const ch = []; let prev = fn(0).expr; for (let t = 0; t < DURATION; t += 1 / 240) { const e = fn(t).expr; if (e !== prev) { ch.push([t, prev]); prev = e; } } return ch; }
+function exprBlend(name, t) {
+  const ch = EXPRS[name]; if (!ch) return null;
+  for (let i = ch.length - 1; i >= 0; i--) { const [tc, prev] = ch[i]; if (tc <= t) return t - tc < .16 ? { prev, p: E.io((t - tc) / .16) } : null; }
+  return null;
+}
+function blinkAmt(t, seed = 0) {
+  for (let n = 0; n < 14; n++) { const bt = 1.1 + n * 2.6 + rnd(n + seed) * 1.2, d = t - bt; if (d > 0 && d < .17) return Math.sin(Math.PI * d / .17); }
+  return 0;
+}
+function blendDraw(fn, name, st, t) {
+  const b = exprBlend(name, t);
+  if (!b || b.prev === st.expr) return fn(st, t);
+  fn({ ...st, expr: b.prev }, t);
+  const m = ctx.getTransform();
+  lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.clearRect(0, 0, W, H); lctx.setTransform(m);
+  const sv = ctx; ctx = lctx; fn(st, t); ctx = sv;
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = b.p; ctx.drawImage(layer, 0, 0); ctx.restore();
+}
+function drawCat(st, t) { return blendDraw(drawCatRaw, 'cat', st, t); }
+function drawMouse(st, t) { return blendDraw(drawMouseRaw, 'mouse', st, t); }
 // ---------- paleta ----------
 const C = {
   ink: '#2b2233', wall: '#ffe6c2', wallDot: '#ffd7a0', floor: '#d9925b', floorDark: '#c27c47',
@@ -86,25 +150,26 @@ function cookie(x, y, r, part = 'full', bite = 0, rot = 0) {
 
 // ---------- gatito ----------
 // (x,y) = punto entre las patas en el suelo.  expr: normal | love | shock | sad | dizzy | happy | determined | chew
-function drawCat(st, t) {
+function drawCatRaw(st, t) {
   const { x, y, dir = 1, sx = 1, sy = 1, rot = 0, expr = 'normal', look = 0, paw = 0, walk = 0, chew = 0, tearsOn = 0 } = st;
+  const SEC = secAt('cat', t), fd = Math.sign(dir) || 1;
   ctx.save();
-  ctx.translate(x, y); ctx.rotate(rot); ctx.scale(dir * sx, sy);
+  ctx.translate(x, y); ctx.rotate(rot + SEC.lean); ctx.scale(dir * sx * (1 - SEC.sq * .6), sy * (1 + SEC.sq));
 
   // sombra
   ctx.save(); ctx.globalAlpha = .18; ellipse(0, 4, 85, 14, '#000', false); ctx.restore();
 
   // cola (contorno + relleno)
-  const wag = Math.sin(t * 5) * 18;
+  const wag = Math.sin(t * 5) * 18 + Math.sin(t * 2.3) * 6 + SEC.tail * 55;
   ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(-60, -50); ctx.quadraticCurveTo(-150, -90 + wag, -120, -190 + wag * .6);
   ctx.lineWidth = 38; ctx.strokeStyle = C.ink; ctx.stroke();
   ctx.lineWidth = 22; ctx.strokeStyle = C.cat; ctx.stroke();
 
   // patas traseras / delanteras
-  const step = Math.sin(walk * Math.PI * 2) * 10;
-  ellipse(-42 + step, -10, 28, 15, C.cat);
-  ellipse(42 - step, -10, 28, 15, C.cat);
+  const step = Math.sin(walk * Math.PI * 2) * 10, lift = Math.cos(walk * Math.PI * 2);
+  ellipse(-42 + step, -10 - Math.max(0, lift) * 9 * (walk ? 1 : 0), 28, 15, C.cat);
+  ellipse(42 - step, -10 - Math.max(0, -lift) * 9 * (walk ? 1 : 0), 28, 15, C.cat);
 
   // cuerpo
   ellipse(0, -72, 82, 70, C.cat);
@@ -121,15 +186,18 @@ function drawCat(st, t) {
     ctx.restore();
   }
 
-  // cabeza
-  const hx = 18, hy = -168;
+  // cabeza (con retraso y ladeo de la animación secundaria)
+  const hx = 18 + SEC.hx * fd, hy = -168 + SEC.hy;
+  ctx.save(); ctx.translate(hx, hy); ctx.rotate(SEC.tilt * fd + Math.sin(t * 1.7) * .02); ctx.translate(-hx, -hy);
   // orejas
   for (const s of [-1, 1]) {
     const ex = hx + s * 42;
+    ctx.save(); ctx.translate(ex, hy - 40); ctx.rotate(s * (SEC.ear * .9 + Math.sin(t * 2.1 + s) * .03)); ctx.translate(-ex, -(hy - 40));
     ctx.beginPath(); ctx.moveTo(ex - 32, hy - 40); ctx.lineTo(ex + s * 14, hy - 112); ctx.lineTo(ex + 34 * (s > 0 ? 1 : 0.6), hy - 40); ctx.closePath();
     ctx.fillStyle = C.cat; ctx.fill(); ctx.lineWidth = 8; ctx.strokeStyle = C.ink; ctx.lineJoin = 'round'; ctx.stroke();
     ctx.beginPath(); ctx.moveTo(ex - 16, hy - 52); ctx.lineTo(ex + s * 10, hy - 92); ctx.lineTo(ex + 18 * (s > 0 ? 1 : .5), hy - 52); ctx.closePath();
     ctx.fillStyle = C.pink; ctx.fill();
+    ctx.restore();
   }
   ellipse(hx, hy, 84, 76, C.cat);
   // rayitas de la frente
@@ -161,11 +229,11 @@ function drawCat(st, t) {
       // ojos llorosos
       ctx.save(); ctx.globalAlpha = .6; ellipse(ex, ey + 18, 16, 6, '#8fd3ff', false); ctx.restore();
     } else {
-      if ((t + 0.4) % 2.8 < .12) { // parpadeo: se ve "vivo"
-        ctx.beginPath(); ctx.moveTo(ex - 13, ey); ctx.lineTo(ex + 13, ey); ctx.lineWidth = 7; ctx.strokeStyle = C.ink; ctx.stroke();
-      } else {
-        ellipse(ex, ey + ly, 13, 18, C.ink, false);
-        ellipse(ex - 4, ey - 7 + ly, 5, 6, C.white, false);
+      const bl = blinkAmt(t, 3);   // parpadeo progresivo
+      if (bl > .82) { ctx.beginPath(); ctx.moveTo(ex - 13, ey + 2); ctx.quadraticCurveTo(ex, ey + 8, ex + 13, ey + 2); ctx.lineWidth = 7; ctx.strokeStyle = C.ink; ctx.stroke(); }
+      else {
+        ellipse(ex, ey + ly + bl * 6, 13, 18 * (1 - bl), C.ink, false);
+        if (bl < .5) ellipse(ex - 4, ey - 7 + ly + bl * 6, 5, 6 * (1 - bl), C.white, false);
       }
     }
   }
@@ -217,25 +285,31 @@ function drawCat(st, t) {
       }
     }
   }
+  ctx.restore();   // cabeza
   ctx.restore();
 }
 
 // ---------- ratoncito ----------
-function drawMouse(st, t) {
+function drawMouseRaw(st, t) {
   const { x, y, dir = -1, sx = 1, sy = 1, expr = 'normal', look = 0, chew = 0, holding = null } = st;
-  ctx.save(); ctx.translate(x, y); ctx.scale(dir * sx, sy);
+  const SEC = secAt('mouse', t), fd = Math.sign(dir) || 1;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(SEC.lean); ctx.scale(dir * sx * (1 - SEC.sq * .6), sy * (1 + SEC.sq));
   ctx.save(); ctx.globalAlpha = .18; ellipse(0, 3, 50, 9, '#000', false); ctx.restore();
   // cola
-  ctx.beginPath(); ctx.moveTo(-40, -18); ctx.bezierCurveTo(-90, -10, -80, -70, -120, -50 + Math.sin(t * 6) * 8);
+  ctx.beginPath(); ctx.moveTo(-40, -18); ctx.bezierCurveTo(-90, -10 + SEC.tail * 20, -80, -70 + SEC.tail * 30, -120, -50 + Math.sin(t * 6) * 8 + SEC.tail * 45);
   ctx.lineCap = 'round'; ctx.lineWidth = 14; ctx.strokeStyle = C.ink; ctx.stroke();
   ctx.lineWidth = 6; ctx.strokeStyle = C.pink; ctx.stroke();
   // patas
   ellipse(-20, -6, 14, 8, C.mouseDark, true, 5); ellipse(20, -6, 14, 8, C.mouseDark, true, 5);
   // cuerpo
   ellipse(0, -36, 46, 34, C.mouse, true, 7);
-  // orejas
-  ellipse(26, -96, 22, 22, C.mouse, true, 7); ellipse(26, -96, 12, 12, C.pink, false);
-  ellipse(64, -92, 22, 22, C.mouse, true, 7); ellipse(64, -92, 12, 12, C.pink, false);
+  ctx.save(); ctx.translate(48 + SEC.hx * fd * .8, -62 + SEC.hy * .8); ctx.rotate(SEC.tilt * fd + Math.sin(t * 2.2) * .03); ctx.translate(-48, 62);
+  // orejas (rebotan)
+  for (const [ex, ey, s] of [[26, -96, -1], [64, -92, 1]]) {
+    ctx.save(); ctx.translate(ex, ey + 18); ctx.rotate(s * SEC.ear * 1.1 + Math.sin(t * 2.6 + s) * .04); ctx.translate(-ex, -(ey + 18));
+    ellipse(ex, ey, 22, 22, C.mouse, true, 7); ellipse(ex, ey, 12, 12, C.pink, false);
+    ctx.restore();
+  }
   // cabeza
   ellipse(48, -62, 34, 30, C.mouse, true, 7);
   // ojo
@@ -244,7 +318,9 @@ function drawMouse(st, t) {
   } else if (expr === 'shock') {
     ellipse(54, -66, 12, 14, C.white, true, 4); ellipse(56, -68 - look * 4, 4, 5, C.ink, false);
   } else {
-    ellipse(56, -66 - look * 4, 7, 9, C.ink, false); ellipse(54, -70 - look * 4, 3, 3, C.white, false);
+    const bl = blinkAmt(t, 11);
+    if (bl > .82) { ctx.beginPath(); ctx.moveTo(49, -65); ctx.lineTo(63, -65); ctx.lineWidth = 4; ctx.strokeStyle = C.ink; ctx.stroke(); }
+    else { ellipse(56, -66 - look * 4, 7, 9 * (1 - bl), C.ink, false); if (bl < .5) ellipse(54, -70 - look * 4, 3, 3, C.white, false); }
   }
   if (expr === 'guilty') { ctx.lineWidth = 4; ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(44, -84); ctx.lineTo(64, -80); ctx.stroke(); }
   // nariz + bigotes
@@ -255,6 +331,7 @@ function drawMouse(st, t) {
   if (expr === 'chew') { const o = (Math.sin(t * 24 + 1) + 1) / 2; ellipse(68, -44, 6, 2 + o * 5, '#7a2440', true, 3); }
   else if (expr === 'shock') ellipse(70, -44, 6, 8, '#7a2440', true, 3);
   ctx.save(); ctx.globalAlpha = .5; ellipse(44, -50, 9, 5, C.pink, false); ctx.restore();
+  ctx.restore();   // cabeza
   // lo que sostiene
   if (holding) cookie(70, -30, holding.r, holding.part, holding.bite || 0, holding.rot || 0);
   ctx.restore();
@@ -449,7 +526,18 @@ function endCard(t, t0, part) {
 function withCamera(cam, fn) {
   ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(cam.s, cam.s); ctx.translate(-cam.cx, -cam.cy); fn(); ctx.restore();
 }
-function startEpisode(render) {
+const SUB = 6, SHUTTER = .5 / 60;   // 6 sub-fotogramas por fotograma (60 fps -> 360 dibujos por segundo)
+function startEpisode(drawFrame) {
+  if (typeof catState === 'function') { SECS.cat = buildSecondary(catState); EXPRS.cat = buildExpr(catState); }
+  if (typeof mouseState === 'function') { SECS.mouse = buildSecondary(mouseState); EXPRS.mouse = buildExpr(mouseState); }
+  const render = t => {
+    for (let i = 0; i < SUB; i++) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      drawFrame(Math.max(0, t + ((i + .5) / SUB - .5) * SHUTTER));
+      octx.globalAlpha = 1 / (i + 1); octx.drawImage(work, 0, 0);
+    }
+    octx.globalAlpha = 1;
+  };
   window.render = render; window.DURATION = DURATION; window.ready = true;
   if (!navigator.webdriver) {
     document.body.classList.add('preview');
