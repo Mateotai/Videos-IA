@@ -96,18 +96,18 @@ New Mochi & Pip cartoon every week ❤️
 ---
 
 ## Ep. 9 · 2D · "Pancake" 🥞 — `salida/ep9_pancake.mp4`
-**Título:** `Mochi wanted the BIGGEST pancake 🥞😹 #shorts`
+**Título:** `Mochi got eaten by his pancake 🥞🌯😹 #shorts`
 **Descripción:**
 ```
-Pip made a tiny, perfect pancake... but Mochi wants the BIGGEST one! 🥞😹 Giant pan, giant flip... and the pancake eats him first 🌯🐱🐭
+Pip made a tiny, perfect pancake 🥞 Mochi wanted a BIGGER one... so he flipped a giant pancake sky-high and it landed right on him! 🌯😹 And Pip ends up with a butter mustache 🧈🐭
 Watch until the end! 👀
 
 New Mochi & Pip cartoon every week ❤️
 
-#shorts #cartoon #animation #cat #kids #funny #pancakes #funnycooking #breakfast
+#shorts #cartoon #animation #cat #kids #funny #pancakes
 ```
-**Etiquetas:** pancakes, funny cooking, breakfast cartoon, cat cartoon, kids cartoon, mochi and pip
-**Títulos traducidos:** ES `Mochi quería la tortita MÁS GRANDE 🥞😹 #shorts` · PT `Mochi queria a MAIOR panqueca 🥞😹 #shorts` · FR `Mochi voulait la PLUS GROSSE crêpe 🥞😹 #shorts` · HI `मोची को सबसे बड़ा पैनकेक चाहिए था 🥞😹 #shorts` · ID `Mochi mau pancake PALING BESAR 🥞😹 #shorts`
+**Etiquetas propias de este vídeo (sustituyen 2-3 de la lista fija):** pancakes, pancake flip, breakfast
+**Títulos traducidos:** ES `A Mochi se lo comió su tortita 🥞🌯😹 #shorts` · PT `Mochi foi comido pela panqueca 🥞🌯😹 #shorts` · FR `Mochi s'est fait manger par sa crêpe 🥞🌯😹 #shorts` · HI `मोची को उसके पैनकेक ने खा लिया 🥞🌯😹 #shorts` · ID `Mochi dimakan pancake-nya 🥞🌯😹 #shorts`
 
 ---
 
