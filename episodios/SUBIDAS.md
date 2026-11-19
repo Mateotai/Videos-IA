@@ -1,4 +1,6 @@
-# Mochi & Pip — Episodios 3 a 8 (listos para subir)
+# Mochi & Pip — Episodios 3 a 9 (listos para subir)
+
+**Etiquetas fijas (todos los vídeos):** `mochi and pip, cartoon, animation, funny cat, animated shorts, cat cartoon, comedy animation` — en cada vídeo se cambian 2-3 por lo que pasa de verdad en pantalla. Nunca #games ni #gameplay.
 
 Orden recomendado (alterna 3D / 2D original para la prueba A/B). Sube **uno cada día**, siempre a la misma hora.
 En todos: **Público** · **"Sí, es contenido creado para niños"** · Categoría **Cine y animación** · Lista **Mochi & Pip**.
@@ -106,7 +108,7 @@ New Mochi & Pip cartoon every week ❤️
 
 #shorts #cartoon #animation #cat #kids #funny #pancakes
 ```
-**Etiquetas propias de este vídeo (sustituyen 2-3 de la lista fija):** pancakes, pancake flip, breakfast
+**Etiquetas:** `mochi and pip, cartoon, animation, funny cat, pancakes, pancake flip, breakfast`
 **Títulos traducidos:** ES `A Mochi se lo comió su tortita 🥞🌯😹 #shorts` · PT `Mochi foi comido pela panqueca 🥞🌯😹 #shorts` · FR `Mochi s'est fait manger par sa crêpe 🥞🌯😹 #shorts` · HI `मोची को उसके पैनकेक ने खा लिया 🥞🌯😹 #shorts` · ID `Mochi dimakan pancake-nya 🥞🌯😹 #shorts`
 
 ---
