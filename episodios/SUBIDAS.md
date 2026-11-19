@@ -1,4 +1,4 @@
-# Mochi & Pip — Episodios 3 a 8 (listos para subir)
+# Mochi & Pip — Episodios 3 a 9 (listos para subir)
 
 Orden recomendado (alterna 3D / 2D original para la prueba A/B). Sube **uno cada día**, siempre a la misma hora.
 En todos: **Público** · **"Sí, es contenido creado para niños"** · Categoría **Cine y animación** · Lista **Mochi & Pip**.
@@ -95,6 +95,24 @@ New Mochi & Pip cartoon every week ❤️
 
 ---
 
+## Ep. 9 · 3D · "Pancakes" 🥞 — `salida/ep9_pancakes.mp4` (40 s, en bucle perfecto)
+**Título:** `Mochi made a GIANT pancake… 🥞😹 #shorts`
+**Descripción:**
+```
+Pip made a tiny pancake 🥞 Mochi wants a BIGGER one... much, much bigger 😹🐱🐭
+Wait for the butter! 🧈👀
+
+New Mochi & Pip cartoon every week ❤️
+
+#shorts #cartoon #animation #cat #kids #funny #pancakes
+```
+**Títulos traducidos:** ES `Mochi hizo una tortita GIGANTE… 🥞😹 #shorts` · PT `Mochi fez uma panqueca GIGANTE… 🥞😹 #shorts` · FR `Mochi a fait une crêpe GÉANTE… 🥞😹 #shorts` · HI `मोची ने बनाया विशाल पैनकेक… 🥞😹 #shorts` · ID `Mochi bikin pancake RAKSASA… 🥞😹 #shorts`
+
+Generarlo: `python3 audio/musica_ep9.py && node render.js --page ep9.html --out ep9_pancakes.mp4 --audio salida/musica_ep9.wav`
+(sin texto en pantalla; el último fotograma es idéntico al primero, así que el Short se repite sin corte).
+
+---
+
 ## Tabla para la prueba A/B (rellénala a las 48 h y a los 7 días)
 | Ep | Estilo | Fecha/hora | Vistas 48 h | Vistas 7 d | % "Se ha visto" | Suscriptores ganados |
 |---|---|---|---|---|---|---|
@@ -106,5 +124,6 @@ New Mochi & Pip cartoon every week ❤️
 | 6 | 2D original | | | | | |
 | 7 | 3D | | | | | |
 | 8 | 2D original | | | | | |
+| 9 | 3D | | | | | |
 
 Cuando tengas los números, pásamelos y te digo qué estilo gana y cómo seguir.
