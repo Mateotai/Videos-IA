@@ -1,7 +1,9 @@
 # Anuncio: venta de pupusas · 4 por 7 €
 
 Vídeo promocional vertical (1080×1920, 60 fps, 20 s) para WhatsApp / estados / Reels,
-hecho 100 % con código: animación en Canvas + música tipo cumbia sintetizada con numpy.
+hecho 100 % con código: animación en Canvas con desenfoque de movimiento (5 sub-fotogramas por
+fotograma) + cumbia compuesta en MIDI e interpretada con instrumentos reales (banco FluidR3 GM:
+acordeón a dos voces, bajo, guitarra, metales, güiro, congas, timbales, cencerro) + efectos sincronizados.
 
 **Guion (120 BPM, cada escena cae en el compás):**
 1. 0 s — "¡PUPUSAS!" letra a letra + cinta "GRAN VENTA" y pupusa gigante girando.
@@ -13,9 +15,11 @@ hecho 100 % con código: animación en Canvas + música tipo cumbia sintetizada 
 ## Cómo regenerarlo
 ```bash
 cd pupusas-venta
-python3 musica.py          # -> salida/musica.wav
-node render.js             # -> salida/pupusas_sin_audio.mp4  (FPS=30 node render.js para 30 fps)
+python3 musica.py          # -> salida/banda.mid, salida/banda.wav, salida/musica.wav
+node render.js             # -> salida/pupusas_sin_audio.mp4  (prueba rápida: FPS=30 SUB=1 node render.js)
 ffmpeg -y -i salida/pupusas_sin_audio.mp4 -i salida/musica.wav \
   -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart salida/pupusas_4x7.mp4
 ```
+Requisitos: Node + Playwright, Python 3 + numpy + mido, ffmpeg, `apt install fluidsynth fluid-soundfont-gm`.
+
 Textos editables al final de `animacion.html` (función `scene3`) y en `scene1` / `scene2`.
