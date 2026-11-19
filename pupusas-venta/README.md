@@ -15,11 +15,15 @@ acordeón a dos voces, bajo, guitarra, metales, güiro, congas, timbales, cencer
 ## Cómo regenerarlo
 ```bash
 cd pupusas-venta
-python3 musica.py          # -> salida/banda.mid, salida/banda.wav, salida/musica.wav
+python3 musica.py          # -> salida/musica_<estilo>.wav/.mp3 para cada estilo
+python3 musica.py --usar marimba   # elige el estilo que va en el vídeo (salida/musica.wav)
 node render.js             # -> salida/pupusas_sin_audio.mp4  (prueba rápida: FPS=30 SUB=1 node render.js)
 ffmpeg -y -i salida/pupusas_sin_audio.mp4 -i salida/musica.wav \
   -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart salida/pupusas_4x7.mp4
 ```
 Requisitos: Node + Playwright, Python 3 + numpy + mido, ffmpeg, `apt install fluidsynth fluid-soundfont-gm`.
+
+Música: `motor_audio.py` (MIDI → fluidsynth → efectos → master) y `estilos.py`
+(marimba salvadoreña, merengue con metales, urbano/dembow, pop alegre y la cumbia anterior).
 
 Textos editables al final de `animacion.html` (función `scene3`) y en `scene1` / `scene2`.
