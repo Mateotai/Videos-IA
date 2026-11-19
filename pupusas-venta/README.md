@@ -24,6 +24,6 @@ ffmpeg -y -i salida/pupusas_sin_audio.mp4 -i salida/musica.wav \
 Requisitos: Node + Playwright, Python 3 + numpy + mido, ffmpeg, `apt install fluidsynth fluid-soundfont-gm`.
 
 Música: `motor_audio.py` (MIDI → fluidsynth → efectos → master) y `estilos.py`
-(marimba salvadoreña, merengue con metales, urbano/dembow, pop alegre y la cumbia anterior).
+(marimba salvadoreña, xuc, cumbia de orquesta, chanchona, pito y tambor, merengue, urbano, pop y la cumbia de acordeón).
 
 Textos editables al final de `animacion.html` (función `scene3`) y en `scene1` / `scene2`.

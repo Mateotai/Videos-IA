@@ -316,10 +316,233 @@ def cumbia(s: Song):
     s.note(36, 2, 'C2', 2.4, 115, human=False)
 
 
+# ============================================================
+#  5. XUC (Si bemol mayor): baile nacional salvadoreño, banda de metales + marimba, aire de 6/8
+# ============================================================
+def xuc(s: Song):
+    BBMAJ = [0, 2, 3, 5, 7, 9, 10]
+    s.inst(0, 56, 112, 70, 45)        # trompetas
+    s.inst(1, 12, 100, 50, 45)        # marimba doblando la melodía
+    s.inst(2, 58, 110, 64, 30)        # tuba
+    s.inst(3, 60, 84, 40, 45)         # cornos: acordes a contratiempo
+    s.inst(4, 66, 90, 84, 45)         # saxo tenor (voz de abajo)
+    BARS = ['Bb', 'F7', 'F7', 'Bb', 'Eb', 'Bb', 'F7', 'Bb', 'F7']
+    MEL = [
+        [('F5', 2), ('D5', 1), ('F5', 2), ('D5', 1), ('Bb5', 3), ('A5', 1), ('G5', 1), ('F5', 1)],
+        [('Eb5', 2), ('C5', 1), ('Eb5', 2), ('C5', 1), ('A5', 3), ('G5', 1), ('F5', 1), ('Eb5', 1)],
+        [('D5', 1), ('Eb5', 1), ('F5', 1), ('G5', 2), ('F5', 1), ('Eb5', 3), ('C5', 3)],
+        [('Bb4', 2), ('D5', 1), ('F5', 3), ('Bb5', 3), ('D6', 3)],
+        [('C6', 3), ('Bb5', 1), ('A5', 1), ('G5', 1), ('Eb6', 4), ('C6', 1), ('Bb5', 1)],
+        [('D6', 1), ('Bb5', 1), ('F5', 1), ('D6', 1), ('Bb5', 1), ('F5', 1), ('Bb5', 3), ('R', 3)],
+        [('R', 3), ('C6', 3), ('A5', 1), ('F5', 1), ('Eb5', 1), ('C5', 3)],
+        [('D5', 1), ('F5', 1), ('Bb5', 1), ('D6', 3), ('C6', 1), ('Bb5', 1), ('A5', 1), ('F5', 3)],
+        [('C6', 3), ('F5', 1), ('G5', 1), ('A5', 1), ('Bb5', 1), ('C6', 1), ('D6', 1), ('Eb6', 1), ('D6', 1), ('C6', 1)],
+    ]
+    s.melody(0, MEL, 108, harm=4, scale=BBMAJ, harm_steps=-2, harm_vel=-12, unit=1 / 3, stacc=.75)
+    s.melody(1, MEL, 92, unit=1 / 3, tremolo=.9, transpose=12)
+    for b, ch in enumerate(BARS):
+        t0 = b * 4
+        for k in range(4):
+            bt = t0 + k
+            if stopped(bt):
+                continue
+            s.note(bt, 2, bass_note(ch, 34, 0 if k % 2 == 0 else 2), .5, 105)
+            s.chord(bt + 2 / 3, 3, voicing(ch, 57), .25, 80)
+            s.note(bt, DR, KICK, .2, 92 if k % 2 == 0 else 70)
+            s.note(bt + 1 / 3, DR, SNARE, .1, 48); s.note(bt + 2 / 3, DR, SNARE, .1, 80)
+            s.note(bt + 2 / 3, DR, CRASH2, .1, 30)
+    hits(s)
+    for start, n in FILLS:
+        for i in range(6):
+            s.note(start + i / 3, DR, SNARE, .1, 80 + 7 * i)
+    for i in range(12):
+        s.note(34 + i / 6, DR, SNARE, .1, 50 + 6 * i)
+    s.chord(36, 0, ['F5', 'Bb5', 'D6'], 2.5, 118, human=False)
+    s.chord(36, 4, ['Bb4', 'D5'], 2.5, 110, human=False)
+    s.chord(36, 3, voicing('Bb', 53), 2.5, 105, human=False)
+    for k in range(14):
+        s.note(36 + k / 6, 1, 'Bb6', .2, 110 - 4 * k, human=False)
+        s.note(36 + k / 6, 1, 'D6', .2, 100 - 4 * k, human=False)
+    s.note(36, 2, 'Bb1', 2.4, 120, human=False)
+
+
+# ============================================================
+#  6. CUMBIA DE ORQUESTA SALVADOREÑA (La mayor): trompetas, saxo, flauta, piano y timbales
+# ============================================================
+def cumbia_orquesta(s: Song):
+    AMAJ = [1, 2, 4, 6, 8, 9, 11]
+    s.inst(0, 56, 110, 72, 45)        # trompeta
+    s.inst(1, 66, 96, 56, 45)         # saxo tenor (tercera abajo)
+    s.inst(2, 33, 114, 64, 25)        # bajo
+    s.inst(3, 0, 88, 40, 40)          # piano
+    s.inst(4, 57, 96, 84, 45)         # trombones
+    s.inst(5, 73, 80, 30, 55)         # flauta (octava arriba)
+    BARS = ['A', 'E7', 'E7', 'A', 'D', 'A', 'E7', 'A', 'E7']
+    MEL = [
+        [('E5', .5), ('A5', .5), ('C#6', .5), ('B5', .5), ('A5', .5), ('E5', .5), ('C#5', 1)],
+        [('D5', .5), ('E5', .5), ('G#5', .5), ('B5', .5), ('D6', 1), ('C#6', .5), ('B5', .5)],
+        [('B5', .5), ('G#5', .5), ('E5', 1), ('R', .5), ('E5', .25), ('F#5', .25), ('G#5', 1)],
+        [('R', .5), ('E5', .5), ('A5', 1), ('C#6', 1), ('E6', 1)],
+        [('A5', 1), ('B5', .5), ('C#6', .5), ('D6', 1.5), ('A5', .5)],
+        [('C#6', .5), ('A5', .5), ('E5', .5), ('A5', .5), ('C#6', 1), ('R', 1)],
+        [('R', 1), ('D6', 1), ('C#6', .5), ('B5', .5), ('G#5', 1)],
+        [('A5', .5), ('C#6', .5), ('E6', 1), ('D6', .5), ('C#6', .5), ('A5', 1)],
+        [('B5', 1), ('E5', .25), ('F#5', .25), ('G#5', .25), ('A5', .25), ('B5', .5), ('C#6', .5), ('D6', 1)],
+    ]
+    s.melody(0, MEL, 108, harm=1, scale=AMAJ, harm_steps=-2, harm_vel=-14, stacc=.7)
+    s.melody(5, MEL, 82, transpose=12, stacc=.7)
+    nxt = BARS[1:] + ['A']
+    for b, ch in enumerate(BARS):
+        t0 = b * 4
+        for off, deg, vel in [(0, 0, 105), (1.5, 0, 82), (2, 2, 98), (3, 1, 80)]:
+            if not stopped(t0 + off):
+                s.note(t0 + off, 2, bass_note(ch, 33, deg), .45 if off % 1 else .9, vel)
+        if not stopped(t0 + 3.5):
+            s.note(t0 + 3.5, 2, bass_note(nxt[b], 33) - 1, .45, 74)
+        for k in range(4):
+            bt = t0 + k + .5
+            if not stopped(bt):
+                s.chord(bt, 3, voicing(ch, 60) + [voicing(ch, 60)[0] + 12], .25, 78)
+        if b in (1, 5, 7):     # fondos de trombón
+            s.chord(t0 + 2, 4, voicing(ch, 50), 1.6, 70)
+        for k in range(4):
+            bt = t0 + k
+            if stopped(bt):
+                continue
+            s.note(bt, DR, GUIRO_L, .4, 72); s.note(bt + .5, DR, GUIRO_S, .2, 58); s.note(bt + .75, DR, GUIRO_S, .2, 50)
+            s.note(bt, DR, COWBELL, .1, 66 if k % 2 == 0 else 50)
+        for off, n, v in [(0, KICK, 90), (2, KICK, 85), (1, CONGA_M, 92), (1.5, CONGA_O, 62), (3, CONGA_O, 88), (3.5, CONGA_L, 92),
+                          (.5, TIMB_H, 40), (1.75, TIMB_H, 38), (2.5, TIMB_H, 40), (3.75, TIMB_H, 38)]:
+            if not stopped(t0 + off):
+                s.note(t0 + off, DR, n, .2, v)
+    hits(s)
+    fills(s, TIMB_H, TIMB_L)
+    for bt, ch, d in [(0, 'A', .45), (18, 'D', .9), (25, 'E7', .6), (32, 'E7', .45)]:
+        s.chord(bt, 4, voicing(ch, 52), d, 112, human=False)
+    s.chord(36, 0, ['C#6', 'E6'], 2.5, 115, human=False)
+    s.chord(36, 1, ['A4', 'E5'], 2.5, 108, human=False)
+    s.note(36, 5, 'A6', 2.5, 100, human=False)
+    s.chord(36, 4, voicing('A', 50), 2.5, 112, human=False)
+    s.chord(36, 3, voicing('A', 45) + voicing('A', 69), 2.5, 105, human=False)
+    s.note(36, 2, 'A1', 2.4, 118, human=False)
+
+
+# ============================================================
+#  7. CHANCHONA (Sol mayor): violines, contrabajo, guitarra y güiro, como en el oriente del país
+# ============================================================
+def chanchona(s: Song):
+    GMAJ = [0, 2, 4, 6, 7, 9, 11]
+    s.inst(0, 40, 110, 70, 50)        # violín 1
+    s.inst(1, 40, 94, 56, 50)         # violín 2 (tercera abajo)
+    s.inst(2, 32, 118, 64, 30)        # contrabajo
+    s.inst(3, 25, 96, 40, 35)         # guitarra
+    s.inst(4, 24, 74, 86, 35)         # segunda guitarra (punteo)
+    BARS = ['G', 'Em', 'C', 'D7', 'G', 'C', 'D7', 'G', 'D7']
+    MEL = [
+        [('B5', .5), ('A5', .5), ('G5', .5), ('A5', .5), ('B5', 1), ('D6', 1)],
+        [('E6', .5), ('D6', .5), ('B5', .5), ('G5', .5), ('E5', 1.5), ('R', .5)],
+        [('E5', .5), ('G5', .5), ('C6', .5), ('B5', .5), ('A5', 1), ('G5', .5), ('A5', .5)],
+        [('R', .5), ('D5', .5), ('F#5', 1), ('A5', 1), ('C6', 1)],
+        [('B5', 1), ('A5', .5), ('B5', .5), ('D6', 1.5), ('B5', .5)],
+        [('C6', .5), ('B5', .5), ('A5', .5), ('G5', .5), ('E5', 1), ('R', 1)],
+        [('R', 1), ('D6', 1), ('C6', .5), ('A5', .5), ('F#5', 1)],
+        [('G5', .5), ('B5', .5), ('D6', 1), ('E6', .5), ('D6', .5), ('B5', 1)],
+        [('A5', 1), ('D5', .25), ('E5', .25), ('F#5', .25), ('G5', .25), ('A5', .5), ('B5', .5), ('C6', 1)],
+    ]
+    s.melody(0, MEL, 106, harm=1, scale=GMAJ, harm_steps=-2, harm_vel=-16, grace=True, grace_steps=-1,
+             stacc=.85, skip_grace_bars=(3,))
+    for b, ch in enumerate(BARS):
+        t0 = b * 4
+        for off, deg, vel in [(0, 0, 108), (1, 2, 80), (2, 0, 100), (3, 2, 82)]:
+            if not stopped(t0 + off):
+                s.note(t0 + off, 2, bass_note(ch, 36, deg), .8, vel)
+        for k in range(4):
+            bt = t0 + k + .5
+            if not stopped(bt):
+                s.chord(bt, 3, voicing(ch, 59), .25, 82, strum=.015)
+        # punteo de segunda guitarra en corcheas (arpegio)
+        v = voicing(ch, 55)
+        for k in range(8):
+            bt = t0 + k * .5
+            if not stopped(bt) and b not in (3, 4):
+                s.note(bt, 4, v[[0, 1, 2, 1][k % 4]] + (12 if k % 4 == 2 else 0), .3, 60)
+        for k in range(4):
+            bt = t0 + k
+            if stopped(bt):
+                continue
+            s.note(bt, DR, GUIRO_L, .4, 82); s.note(bt + .5, DR, GUIRO_S, .2, 66); s.note(bt + .75, DR, GUIRO_S, .2, 58)
+        for off, n, v_ in [(1, CONGA_M, 85), (3, CONGA_O, 80), (3.5, CONGA_L, 85), (0, KICK, 60), (2, KICK, 60)]:
+            if not stopped(t0 + off):
+                s.note(t0 + off, DR, n, .2, v_)
+    hits(s)
+    fills(s, CONGA_O, CONGA_L)
+    for k in range(15):   # final con trémolo de violines
+        s.chord(36 + k / 6, 0, ['G5', 'D6'], .2, 112 - 3 * k, human=False)
+        s.chord(36 + k / 6, 1, ['B4', 'G5'], .2, 100 - 3 * k, human=False)
+    s.chord(36, 3, voicing('G', 55) + [79], 2.4, 108, strum=.03, human=False)
+    s.note(36, 2, 'G1', 2.4, 120, human=False)
+
+
+# ============================================================
+#  8. PITO Y TAMBOR (Sol): folclor de los historiantes, flauta de caña, tambor y teponahuaste
+# ============================================================
+def pito_tambor(s: Song):
+    GMAJ = [0, 2, 4, 6, 7, 9, 11]
+    s.inst(0, 74, 112, 64, 55)        # pito (flauta dulce)
+    s.inst(1, 79, 84, 76, 60)         # ocarina (octava abajo)
+    s.inst(2, 47, 100, 64, 40)        # tambor grave (timbal de orquesta)
+    s.inst(3, 12, 74, 48, 45)         # marimba suave sosteniendo la armonía
+    s.inst(4, 116, 96, 64, 35)        # tambor (taiko)
+    BARS = ['G', 'D', 'D', 'G', 'C', 'G', 'D', 'G', 'D']
+    MEL = [
+        [('D5', .5), ('G5', .5), ('A5', .5), ('B5', .5), ('A5', .5), ('G5', .5), ('E5', 1)],
+        [('D5', .5), ('E5', .5), ('G5', .5), ('A5', .5), ('B5', 1), ('A5', 1)],
+        [('G5', .5), ('E5', .5), ('D5', 1), ('R', .5), ('D5', .25), ('E5', .25), ('G5', 1)],
+        [('R', .5), ('D5', .5), ('G5', 1), ('A5', 1), ('B5', 1)],
+        [('D6', 1), ('B5', .5), ('A5', .5), ('E6', 1.5), ('D6', .5)],
+        [('B5', .5), ('A5', .5), ('G5', .5), ('A5', .5), ('B5', 1), ('R', 1)],
+        [('R', 1), ('D6', 1), ('B5', .5), ('A5', .5), ('G5', 1)],
+        [('E5', .5), ('G5', .5), ('A5', 1), ('B5', .5), ('A5', .5), ('G5', 1)],
+        [('A5', 1), ('D5', .25), ('E5', .25), ('G5', .25), ('A5', .25), ('B5', .5), ('D6', .5), ('E6', 1)],
+    ]
+    s.melody(0, MEL, 108, harm=1, scale=GMAJ, harm_steps=-7, harm_vel=-12, grace=True, stacc=.8, skip_grace_bars=(3,))
+    for b, ch in enumerate(BARS):
+        t0 = b * 4
+        for k in range(4):
+            bt = t0 + k
+            if stopped(bt):
+                continue
+            s.note(bt, 4, 'C3' if k % 2 == 0 else 'G3', .4, 100 if k % 2 == 0 else 78)       # tambor
+            s.note(bt + .5, 4, 'G3', .2, 55)
+            s.note(bt, 2, bass_note(ch, 40), .4, 70 if k % 2 == 0 else 0)
+            # teponahuaste: dos tablas de madera
+            s.note(bt, DR, 77, .1, 70); s.note(bt + .5, DR, 76, .1, 82); s.note(bt + .75, DR, 76, .1, 55)
+            s.note(bt + .5, DR, MARACAS, .1, 50); s.note(bt, DR, MARACAS, .1, 35)
+        for k in range(2):
+            if not stopped(t0 + k * 2):
+                s.chord(t0 + k * 2, 3, voicing(ch, 55), 1.8, 50)
+    hits(s)
+    for start, n in FILLS:
+        for i in range(n):
+            s.note(start + i * .25, 4, 'C3', .2, 85 + 8 * i)
+    for i in range(8):
+        s.note(34 + i * .25, 4, 'C3' if i % 2 == 0 else 'G3', .2, 60 + 8 * i)
+    for k in range(10):
+        s.note(36 + k / 6, 3, 'G5', .2, 90 - 5 * k, human=False); s.note(36 + k / 6, 3, 'D5', .2, 85 - 5 * k, human=False)
+    s.note(36, 0, 'G5', 2.4, 112, human=False)
+    s.note(36, 1, 'G4', 2.4, 100, human=False)
+    s.note(36, 4, 'C3', .5, 127, human=False)
+    s.note(36, 2, 'G2', 2.4, 110, human=False)
+
+
 ESTILOS = {
     'marimba': (marimba, 'Marimba salvadoreña'),
     'merengue': (merengue, 'Merengue con metales'),
     'urbano': (urbano, 'Urbano / dembow'),
     'pop': (pop, 'Pop alegre (silbido y palmas)'),
     'cumbia': (cumbia, 'Cumbia (versión anterior)'),
+    'xuc': (xuc, 'Xuc (banda y marimba)'),
+    'cumbia_orquesta': (cumbia_orquesta, 'Cumbia de orquesta salvadoreña'),
+    'chanchona': (chanchona, 'Chanchona (violines)'),
+    'pito_tambor': (pito_tambor, 'Pito y tambor (folclor)'),
 }

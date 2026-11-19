@@ -90,17 +90,17 @@ class Song:
             self.note(beat + i * strum, ch, n, dur, vel, human)
 
     def melody(self, ch, bars, vel=100, harm=None, scale=None, harm_steps=-2, harm_vel=-28,
-               legato=.92, stacc=.8, grace=False, tremolo=None, unit=1.0, skip_grace_bars=()):
+               legato=.92, stacc=.8, grace=False, tremolo=None, unit=1.0, skip_grace_bars=(), transpose=0, grace_steps=1):
         """bars: lista de compases; cada uno lista de (nota|'R', duración en `unit` de pulso)."""
         for b, line in enumerate(bars):
             beat = b * 4.0
             for n, d in line:
                 d *= unit
                 if n != 'R':
-                    mid = m(n)
+                    mid = m(n) + transpose
                     accent = vel if abs(beat - round(beat)) < 1e-6 else vel - 10
                     if grace and d >= 1 and b not in skip_grace_bars:
-                        self.note(beat - .09, ch, self.dia(mid, scale, 1), .08, accent - 22)
+                        self.note(beat - .09, ch, self.dia(mid, scale, grace_steps), .08, accent - 22)
                     notes = [(ch, mid, accent)]
                     if harm is not None:
                         notes.append((harm, self.dia(mid, scale, harm_steps), accent + harm_vel))
