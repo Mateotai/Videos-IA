@@ -13,6 +13,7 @@
 const DURATION = 36;
 const HOOK = 2.4, REW = .5, OFF = HOOK + REW;   // el vídeo arranca con el gancho y rebobina
 const HOOK_S0 = 24.5, HOOK_K = (26.65 - HOOK_S0) / HOOK;   // el gancho enseña la olla, el BOOM y el vuelo
+const SIGN_V = 33.4;                              // aparece el letrero "Mochi & Pip" (tiempo de vídeo)
 const MS = .72;                                   // Mochi más pequeño en este episodio (cabe mejor en vertical)
 const SHOTS = [0, 4.6, 10.2, 15.5, 20, 24.6, 29.6, 99];
 const shotOf = s => { let i = 0; while (i < 6 && s >= SHOTS[i + 1]) i++; return i; };
@@ -496,6 +497,13 @@ function render(v) {
   if ((s > BOOM && s < BOOM + .07) || (s > BONK && s < BONK + .05) ) { ctx.fillStyle = 'rgba(255,250,235,.6)'; ctx.fillRect(0, 0, W, H); }
   if (s > BOOM && s < BOOM + .45) focusLines(s, (1 - seg(s, BOOM + .15, BOOM + .45)) * (hook ? .6 : 1));
   warmGrade();
+  // letrero de la serie arriba al final (sin "PART")
+  if (v > SIGN_V) {
+    const p = easeOutBack(seg(v, SIGN_V, SIGN_V + .35)), bob = Math.sin((v - SIGN_V) * 3) * 6;
+    ctx.save(); ctx.translate(W / 2, 260 + bob); ctx.scale(p, p); brandTitle(ctx, 0, 0, 150, -.03); ctx.restore();
+    const sh = seg(v, SIGN_V + .5, SIGN_V + 1.1);      // brillo que cruza el letrero
+    if (sh > 0 && sh < 1) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const x = lerp(-300, W + 300, sh); const g = ctx.createLinearGradient(x - 120, 0, x + 120, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.fillRect(0, 160, W, 200); ctx.restore(); }
+  }
   octx.drawImage(overlay, 0, 0);
   // ---- rebobinado VHS ----
   if (rew || (v >= OFF && v < OFF + .12)) {

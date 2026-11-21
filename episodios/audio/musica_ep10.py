@@ -155,5 +155,6 @@ for k in range(10): X.add(crunch(), V(30.55 + k * .11), .35)
 X.add(chirp(700, 1700, .09), V(31.65), .55); X.add(kpop(1.3), V(31.67), .45)                # ¡hic!
 X.add(pop(600, 450, .06), V(32.15), .4)                                                     # cae en la cabeza de Pip
 giggle(V(32.2), 6, 1500)
+for k, n2 in enumerate(['C6', 'E6', 'G6', 'C7']): X.add(chime(hz(n2)), 33.4 + k * .06, .35)   # aparece el letrero de la serie
 
 X.save(OUT, fade=.05); print('ok', round(LAND_S, 3))
