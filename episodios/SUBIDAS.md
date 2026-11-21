@@ -114,7 +114,7 @@ Generarlo: `python3 audio/musica_ep9.py && node render.js --page ep9.html --out 
 ---
 
 ## Ep. 10 · 3D · "Popcorn" 🍿 — `salida/ep10_popcorn.mp4` (36 s)
-Gancho: empieza con la explosión de palomitas a cámara lenta (Mochi volando), rebobina estilo VHS y cuenta la historia.
+Gancho: Mochi sentado en la olla… ¡BOOM! y sale volando a cámara lenta; rebobina estilo VHS (◀◀) y cuenta la historia.
 **Título:** `Mochi put the WHOLE bag in the pot 🍿💥 #shorts`
 **Descripción:**
 ```

@@ -1,7 +1,7 @@
 // =====================================================================
 //  EPISODIO 10 (3D) — "Popcorn 🍿"   36 s · 9:16 · música: "Fluffing a Duck" (Kevin MacLeod, CC BY 4.0)
-//  GANCHO (0–2.4 s de vídeo): la explosión de palomitas a cámara lenta, Mochi volando.
-//  REBOBINADO estilo VHS (2.4–3.0) y empieza la historia (tiempo de historia = vídeo − 3):
+//  GANCHO (0–2.4 s de vídeo): Mochi sentado en la olla… ¡BOOM! y sale volando a cámara lenta.
+//  REBOBINADO estilo VHS (2.4–2.9) y empieza la historia (tiempo de historia = vídeo − 2.9):
 //  1 (0–4.6)    Pip hace palomitas en una ollita.
 //  2 (4.6–10.2) Mochi se asoma… una palomita le explota en la nariz a cámara lenta. ¡BONK!
 //  3 (10.2–15.5) Intenta cazarlas con la boca: nariz, oreja… y la tercera cae en la cabeza de Pip.
@@ -11,8 +11,9 @@
 //  7 (29.6–33)  Montaña de palomitas; Mochi con mofletes de hámster; hipo… palomita a la cabeza de Pip.
 // =====================================================================
 const DURATION = 36;
-const HOOK = 2.4, REW = .6, OFF = HOOK + REW;   // el vídeo arranca con el gancho y rebobina
-const HOOK_S0 = 25.25;
+const HOOK = 2.4, REW = .5, OFF = HOOK + REW;   // el vídeo arranca con el gancho y rebobina
+const HOOK_S0 = 24.5, HOOK_K = (26.65 - HOOK_S0) / HOOK;   // el gancho enseña la olla, el BOOM y el vuelo
+const MS = .72;                                   // Mochi más pequeño en este episodio (cabe mejor en vertical)
 const SHOTS = [0, 4.6, 10.2, 15.5, 20, 24.6, 29.6, 99];
 const shotOf = s => { let i = 0; while (i < 6 && s >= SHOTS[i + 1]) i++; return i; };
 
@@ -135,6 +136,7 @@ for (const w of SW) { w.yEnd = w.r < 50 ? moundH(w.tl + w.D) * shapeM(w.r) + .06
 const KS = []; for (let i = 0; i < NKER; i++) KS.push({ t0: 17.55 + i / NKER * 1.0, spill: rnd(i + 40) < .3, a: rnd(i) * TAU, r: rnd(i + 2), s: .8 + rnd(i + 3) * .5 });
 
 // ---------- extras de los personajes ----------
+mochi.root.scale.setScalar(MS); sack.scale.setScalar(.8);
 const cheeks = [-1, 1].map(s => { const m = mesh(SPH, MC.fur, { x: s * .62, y: -.25, z: .38, sx: .01, sy: .01, sz: .01 }); mochi.hT.add(m); return m; });
 const sweat = mesh(SPH, gloss('#9fdcff', { transparent: true, opacity: .85 }), { sx: .07, sy: .1, sz: .05, shadow: false }); scene.add(sweat);
 const earPop = popc(.2); const headPop = popc(.17);
@@ -173,11 +175,11 @@ KM(4.6, { x: 4.6, z: HZ, yaw: -1.2, wr: 2.2, wamt: 1, lid: .4 }); KM(5.75, { wr:
 KM(5.2, { sn: 0, hp: 0, lid: .4 }); KM(5.4, { sn: 1, hp: -.25, lid: .9 }); KM(5.75, { sn: 1 }); KM(5.85, { sn: 0, lid: 0, hp: 0 });
 KM(5.95, { eb: 1, sp: 0, ly: 0 }); KM(6.15, { eb: 1.35, sp: .8, ly: -.3, lx: -.4 }, 'back'); KM(6.1, { tg: 0, lk: 0 }); KM(6.3, { tg: .6, lk: 1, mo: .3 }); KM(6.6, { tg: 0, lk: 0, mo: 0 });
 P(4.6, { chew: 1, lid: .85 }); P(5.0, { chew: 0, lid: 0, hy: .5, lx: .6, ed: .3 }); P(5.3, { aLf: 1.25, aRf: 1.25, aLo: -.6, aRo: -.6, fid: 1 });
-KM(6.6, { x: HX, lean: 0, hp: 0, sp: .8, eb: 1.35, aLf: .15, aRf: .15, aLo: .22, aRo: .22 }); KM(7.15, { x: HX, lean: .62, hp: .12, sp: 0, eb: 1.15, ly: -.6, lx: 0, aLf: .6, aRf: .6, aLo: .5, aRo: .5 }, 'io');
+KM(6.6, { x: HX, lean: 0, hp: 0, sp: .8, eb: 1.35, aLf: .15, aRf: .15, aLo: .22, aRo: .22 }); KM(7.15, { x: HX, lean: .45, hp: -.08, sp: 0, eb: 1.15, ly: -.6, lx: 0, aLf: .6, aRf: .6, aLo: .5, aRo: .5 }, 'io');
 // la palomita le explota en la nariz (cámara lenta 7.55–8.45)
-KM(7.5, { eb: 1.15, cross: 0, pd: 1, ly: -.6 }); KM(7.9, { eb: 1.5, cross: 1, pd: .6, ly: -.2 }, 'io'); KM(8.45, { eb: 1.6, cross: 1 });
+KM(7.5, { eb: 1.15, cross: 0, pd: 1, ly: -.6 }); KM(7.9, { eb: 1.5, cross: 1, pd: .6, ly: 0 }, 'io'); KM(8.45, { eb: 1.6, cross: 1 });
 const BONK = 8.45;
-KM(BONK, { x: HX, z: HZ, lean: .62, y: 0, sit: 0, sy: 1, sx: 1 });
+KM(BONK, { x: HX, z: HZ, lean: .45, y: 0, sit: 0, sy: 1, sx: 1 });
 KM(BONK + .18, { x: HX + .5, z: HZ - .5, lean: -.55, y: .45, sy: 1.2, sx: .9, eb: 1.3, cross: 0, aLf: 2.4, aRf: 2.4, aLo: .8, aRo: .8 }, 'o');
 KM(BONK + .18, { hp: -.2 }); KM(BONK + .42, { lean: -.25, y: 0, sit: 1, sy: .78, sx: 1.18 }, 'iq'); KM(BONK + .62, { sy: 1, sx: 1 }, 'back');
 KM(BONK + .45, { lid: .5, ed: .8, hr: 0 }); KM(9.6, { lid: .5, ed: .8 }); KM(9.75, { lid: 0, ed: 0, hr: .2 }); KM(9.9, { hr: -.2 }); KM(10.05, { hr: 0 });
@@ -273,7 +275,7 @@ function mochiState(s) {
   if (s >= 29.0) {    // asoma la cabeza de la montaña
     const k = easeOutBack(seg(s, MOUP, MOUP + .4)), hic = Math.exp(-((s - HIC) ** 2) / .004) * (s > HIC - .1 ? 1 : 0);
     st.mode = s > MOUP - .05 ? 'head' : 'hidden'; st.hs = .95;
-    st.x = MO_END.x; st.z = MO_END.z; st.y = MOUND_H * shapeM(Math.hypot(MO_END.x - MOUND.x, MO_END.z - MOUND.z)) + .62 - (1 - k) * 1.6 + hic * .2 + Math.sin(s * 9) * .02 * (s > HIC + .5 ? 1 : 0);
+    st.x = MO_END.x; st.z = MO_END.z; st.y = MOUND_H * shapeM(Math.hypot(MO_END.x - MOUND.x, MO_END.z - MOUND.z)) + .5 - (1 - k) * 1.3 + hic * .2 + Math.sin(s * 9) * .02 * (s > HIC + .5 ? 1 : 0);
     st.yaw = -.15; st.lean = 0; st.roll = Math.sin(s * 3) * .05; st.sx = st.sy = st.sz = 1 + hic * .1;
     st.ck = 1.45 - (s > HIC ? .3 : 0); st.lid = s > HIC + .45 ? .92 : (s > HIC - .05 && s < HIC + .3 ? 0 : .88); st.eb = s > HIC - .05 && s < HIC + .3 ? 1.45 : 1; st.mo = s > HIC && s < HIC + .15 ? .7 : 0;
     st.chew = s < HIC ? 1 : 0; st.hp = -.05; st.hy = s > HIC + .45 ? .25 : 0; st.ed = 0; st.cross = 0; st.lx = 0; st.ly = 0; st.br = 0; st.sp = 0;
@@ -299,7 +301,7 @@ const CAMS = SHOTS.slice(0, 7).map(() => new Rig({ tx: 0, ty: 1, tz: 0, d: 8, yw
 CAMS[0].key(0, { tx: -.48, ty: .66, tz: .7, d: 5.3, yw: .18, pt: .14 }).key(4.6, { tx: -.45, ty: .66, tz: .7, d: 4.8, yw: .1, pt: .12 }, 'io');
 CAMS[1].key(4.6, { tx: .85, ty: 1.6, tz: .2, d: 13, yw: .05, pt: .08 }).key(6.2, { tx: .6, ty: 1.55, tz: .2, d: 12.4, yw: .05, pt: .08 }, 'io')
   .key(7.2, { tx: .3, ty: 1.15, tz: .4, d: 6.5, yw: -.25, pt: .04 }, 'io').key(7.55, { fw: 0, tx: .3, ty: 1.15, tz: .4, d: 6.4, yw: -.25, pt: .04 })
-  .key(7.551, { fw: 1, d: 4.4, yw: -.72, pt: .06 }).key(BONK, { fw: 1, d: 3.9, yw: -.78, pt: .05 })
+  .key(7.551, { fw: 1, d: 4.6, yw: -.72, pt: .06 }).key(BONK, { fw: 1, d: 4.2, yw: -.78, pt: .05 })
   .key(BONK + .01, { fw: 0, tx: .7, ty: 1.55, tz: .1, d: 13, yw: .05, pt: .08 }).key(10.2, { tx: .6, ty: 1.55, tz: .1, d: 12.6, yw: .03, pt: .08 }, 'io');
 CAMS[1].key(BONK, { sh: 0 }).key(BONK + .02, { sh: 1 }).key(BONK + .45, { sh: 0 });
 CAMS[2].key(10.2, { tx: .6, ty: 1.6, tz: .1, d: 12.6, yw: .0, pt: .08 }).key(C3 + .4, { tx: .55, ty: 1.55, tz: .1, d: 12.0, yw: .0, pt: .08 }, 'io')
@@ -320,12 +322,17 @@ CAMS[6].key(29.6, { tx: -.7, ty: 2.15, tz: .9, d: 9.0, yw: -.3, pt: .12 }).key(H
   .key(HIC + .55, { tx: -.95, ty: 2.1, tz: 1.0, d: 6.4, yw: -.3, pt: .1 }, 'io').key(33.5, { tx: -.95, ty: 2.1, tz: 1.0, d: 6.1, yw: -.3, pt: .1 }, 'io');
 CAMS[6].key(HIC, { sh: 0 }).key(HIC + .02, { sh: .3 }).key(HIC + .2, { sh: 0 });
 CAMS.forEach(c => c.done());
-const HOOK_CAM = s => { const f = mochiFlight(s).pos; return { tx: f.x, ty: f.y + 1.5, tz: f.z, d: lerp(6.2, 7.4, seg(s, HOOK_S0, HOOK_S0 + HOOK)), yw: lerp(-.25, .2, seg(s, HOOK_S0, HOOK_S0 + HOOK)), pt: -.16, fov: 34, roll: lerp(.12, -.06, seg(s, HOOK_S0, HOOK_S0 + HOOK)) }; };
+const HOOK_CAM = (s, m) => {   // plano claro: la olla y Mochi primero; luego sigue su vuelo
+  // 1) Mochi sentado en la olla  2) ¡BOOM!: la cámara se abre y se ve la olla y a Mochi saliendo disparado  3) le sigue en el aire
+  const a = E.o(seg(s, BOOM + .02, 24.95)), k = E.io(seg(s, 25.05, 25.9)), sh = s > BOOM && s < BOOM + .5 ? (1 - seg(s, BOOM, BOOM + .5)) : 0;
+  const w = { tx: .05, ty: lerp(1.55, 3.9, a), tz: .6, d: lerp(8.6, 13.5, a), pt: lerp(.06, .02, a) };
+  return { tx: lerp(w.tx, m.x, k) + Math.sin(s * 83) * .08 * sh, ty: lerp(w.ty, m.y + 1.0, k) + Math.cos(s * 71) * .08 * sh, tz: lerp(w.tz, m.z, k), d: lerp(w.d, 7.8, k), yw: lerp(.1, .16, k), pt: lerp(w.pt, -.08, k), fov: 30 };
+};
 
 // ---------- mapeo vídeo → historia ----------
 function storyTime(v) {
-  if (v < HOOK) return HOOK_S0 + v;
-  if (v < OFF) return lerp(HOOK_S0 + HOOK, 0, E.i(seg(v, HOOK, OFF)));
+  if (v < HOOK) return HOOK_S0 + v * HOOK_K;
+  if (v < OFF) return lerp(HOOK_S0 + HOOK * HOOK_K, 0, E.i(seg(v, HOOK, OFF)));
   return v - OFF;
 }
 
@@ -469,12 +476,12 @@ function render(v) {
 
   // ---- cámara ----
   let c;
-  if (hook) c = HOOK_CAM(s);
+  if (hook) c = HOOK_CAM(s, msd);
   else {
     const C = CAMS[shot]; c = {}; for (const k in C.d) c[k] = C.val(k, s);
     if (c.fw > 0) {
       let p = null;
-      if (shot === 1) p = nose; else if (shot === 5 && MMODE.get(s) === 'fly' && phys(s) - P0 < LAND_U) p = V3(msd.x, msd.y + 1.4, msd.z);
+      if (shot === 1) p = nose; else if (shot === 5 && MMODE.get(s) === 'fly' && phys(s) - P0 < LAND_U) p = V3(msd.x, msd.y + 1.0, msd.z);
       if (p) { c.tx = lerp(c.tx, p.x, c.fw); c.ty = lerp(c.ty, p.y, c.fw); c.tz = lerp(c.tz, p.z, c.fw); }
     }
     if (c.sh > 0) { c.tx += Math.sin(s * 83) * .05 * c.sh * c.d / 6; c.ty += Math.cos(s * 71) * .05 * c.sh * c.d / 6; }
@@ -483,22 +490,25 @@ function render(v) {
 
   // ---- acabado ----
   ctx.clearRect(0, 0, W, H);
-  const slow = hook || (s > 7.55 && s < BONK) || (s > SLOW[0][0] && s < SLOW[1][1] && !rew);
-  if (slow) { const a = hook ? 1 : (s < 9 ? Math.min(1, seg(s, 7.55, 7.75)) : Math.min(seg(s, SLOW[0][0], SLOW[0][1]), 1 - seg(s, SLOW[1][0], SLOW[1][1]))); const g = ctx.createRadialGradient(W / 2, H / 2, H * .25, W / 2, H / 2, H * .75); g.addColorStop(0, 'rgba(60,30,10,0)'); g.addColorStop(1, `rgba(60,30,10,${.38 * a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+  const slow = (hook && s > SLOW[0][0]) || (s > 7.55 && s < BONK) || (s > SLOW[0][0] && s < SLOW[1][1] && !rew);
+  if (slow) { const a = hook ? seg(s, SLOW[0][0], SLOW[0][1]) : (s < 9 ? Math.min(1, seg(s, 7.55, 7.75)) : Math.min(seg(s, SLOW[0][0], SLOW[0][1]), 1 - seg(s, SLOW[1][0], SLOW[1][1]))); const g = ctx.createRadialGradient(W / 2, H / 2, H * .25, W / 2, H / 2, H * .75); g.addColorStop(0, 'rgba(60,30,10,0)'); g.addColorStop(1, `rgba(60,30,10,${.38 * a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
   if (s > ZIP + .05 && s < ZIP + .35) { const a = 1 - seg(s, ZIP + .2, ZIP + .35); ctx.save(); ctx.globalAlpha = a * .8; ctx.strokeStyle = '#fff7ea'; ctx.lineCap = 'round'; for (let i = 0; i < 9; i++) { const y = 1100 + (rnd(i) - .5) * 520, x0 = 300 + rnd(i + 3) * 300; ctx.lineWidth = 8 + rnd(i + 5) * 14; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + 300 + rnd(i + 8) * 300, y); ctx.stroke(); } ctx.restore(); }
-  if ((s > BOOM && s < BOOM + .07) || (s > BONK && s < BONK + .05) || (v < .07)) { ctx.fillStyle = 'rgba(255,250,235,.6)'; ctx.fillRect(0, 0, W, H); }
-  if (s > BOOM && s < BOOM + .45 && !hook) focusLines(s, 1 - seg(s, BOOM + .15, BOOM + .45));
+  if ((s > BOOM && s < BOOM + .07) || (s > BONK && s < BONK + .05) ) { ctx.fillStyle = 'rgba(255,250,235,.6)'; ctx.fillRect(0, 0, W, H); }
+  if (s > BOOM && s < BOOM + .45) focusLines(s, (1 - seg(s, BOOM + .15, BOOM + .45)) * (hook ? .6 : 1));
   warmGrade();
   octx.drawImage(overlay, 0, 0);
   // ---- rebobinado VHS ----
   if (rew || (v >= OFF && v < OFF + .12)) {
     const k = rew ? 1 : 1 - seg(v, OFF, OFF + .12);
     vctx.drawImage(out, 0, 0);
-    for (let y = 0; y < H; y += 24) { const dx = (rnd(Math.floor(v * 60) * 7 + y) - .5) * 60 * k + Math.sin(y * .02 + v * 40) * 18 * k; octx.drawImage(vhs, 0, y, W, 24, dx, y, W, 24); }
+    for (let y = 0; y < H; y += 24) { const dx = (rnd(Math.floor(v * 60) * 7 + y) - .5) * 22 * k + Math.sin(y * .02 + v * 40) * 8 * k; octx.drawImage(vhs, 0, y, W, 24, dx, y, W, 24); }
     octx.save(); octx.globalCompositeOperation = 'screen'; octx.globalAlpha = .25 * k; octx.drawImage(vhs, 10 * k, 0); octx.restore();
     octx.fillStyle = `rgba(20,10,40,${.18 * k})`; octx.fillRect(0, 0, W, H);
     for (let i = 0; i < 3; i++) { const y = ((v * 2900 + i * 640) % (H + 200)) - 100; const g = octx.createLinearGradient(0, y - 40, 0, y + 40); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, `rgba(255,255,255,${.45 * k})`); g.addColorStop(1, 'rgba(255,255,255,0)'); octx.fillStyle = g; octx.fillRect(0, y - 40, W, 80); }
-    octx.fillStyle = `rgba(255,255,255,${.06 * k})`; for (let i = 0; i < 260; i++) octx.fillRect(rnd(i + v * 999) * W, rnd(i * 3 + v * 777) * H, 3, 2);
+    octx.fillStyle = `rgba(255,255,255,${.05 * k})`; for (let i = 0; i < 160; i++) octx.fillRect(rnd(i + v * 999) * W, rnd(i * 3 + v * 777) * H, 3, 2);
+    octx.save(); octx.globalAlpha = k * (.75 + .25 * Math.sin(v * 40)); octx.translate(W / 2, H * .44); octx.shadowColor = 'rgba(0,0,0,.45)'; octx.shadowBlur = 24;
+    octx.fillStyle = '#ffffff'; for (const x0 of [-10, -150]) { octx.beginPath(); octx.moveTo(x0 + 130, -95); octx.lineTo(x0, 0); octx.lineTo(x0 + 130, 95); octx.closePath(); octx.fill(); }
+    octx.restore();
   }
 }
 startEpisode(render);

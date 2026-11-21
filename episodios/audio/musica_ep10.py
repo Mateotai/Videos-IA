@@ -1,6 +1,6 @@
 """Audio del Episodio 10 "Popcorn" (36 s).
 Base: "Fluffing a Duck" Kevin MacLeod (incompetech.com), CC BY 4.0 — ver audio/canciones/CREDITOS.md.
-Tiempo de vídeo v; tiempo de historia s = v - 3 (los 3 primeros segundos son el gancho + rebobinado).
+Tiempo de vídeo v; tiempo de historia s = v - 2.9 (los primeros 2.9 s son el gancho + rebobinado).
 La canción se alinea para que su pausa natural (30.4–31.35 s) caiga en el silencio antes del BOOM."""
 import os, sys, subprocess, wave
 import numpy as np
@@ -10,7 +10,9 @@ from sintes import *
 HERE = os.path.dirname(os.path.abspath(__file__))
 SONG = os.path.join(HERE, 'canciones', 'Fluffing a Duck - Kevin MacLeod.mp3')
 OUT = os.path.join(os.path.dirname(HERE), 'salida', 'musica_ep10.wav')
-DUR, OFF, SONG_AT = 36.0, 3.0, 3.8          # canción(v) = v + 3.8
+DUR, OFF, SONG_AT = 36.0, 2.9, 3.9          # canción(v) = v + 3.9 (su pausa cae en el silencio antes del BOOM)
+HOOK, HOOK_S0 = 2.4, 24.5; HOOK_K = (26.65 - HOOK_S0) / HOOK
+HV = lambda s: (s - HOOK_S0) / HOOK_K       # historia -> vídeo dentro del gancho
 X = Mix(DUR)
 V = lambda s: s + OFF                       # historia -> vídeo
 
@@ -26,11 +28,12 @@ def ramp(t, a, b): return np.clip((t - a) / (b - a), 0, 1)
 SLOW1 = (V(24.75), V(24.95), V(28.4), V(28.6))     # cámara lenta grande
 SLOW0 = (V(7.5), V(7.6), V(8.4), V(8.47))           # palomita en la nariz
 lp = np.zeros(n)
-lp = np.maximum(lp, 1 - ramp(tv, 2.25, 2.4))                                   # gancho
+lp = np.maximum(lp, ramp(tv, HV(24.75), HV(24.95)) * (1 - ramp(tv, 2.25, 2.4)))   # gancho (cámara lenta tras el BOOM)
 for a, b, c, d in (SLOW0, SLOW1): lp = np.maximum(lp, ramp(tv, a, b) * (1 - ramp(tv, c, d)))
 gain = np.full(n, .62)
 gain *= 1 - .35 * lp
-gain[(tv >= 2.4) & (tv < 3.0)] = 0                                               # rebobinado (se sustituye)
+gain[tv < HV(24.6)] = 0                                                          # silencio tenso antes del BOOM
+gain[(tv >= 2.4) & (tv < OFF)] = 0                                               # rebobinado (se sustituye)
 gain *= 1 - ramp(tv, DUR - 1.4, DUR)                                             # fundido final
 i0 = int(SONG_AT * SR)
 seg_c = song[i0:i0 + n]; seg_l = song_lp[i0:i0 + n]
@@ -38,12 +41,12 @@ mixs = (seg_c * (1 - lp[:, None]) + seg_l * lp[:, None]) * gain[:, None]
 X.buf[:len(mixs)] += mixs
 
 # ---------- rebobinado: la canción hacia atrás y muy rápida ----------
-a = int((SONG_AT + 3.0) * SR); chunk = song[a:a + int(6.6 * SR)][::-1][::11]
+a = int((SONG_AT + 3.0) * SR); chunk = song[a:a + int(5.5 * SR)][::-1][::11]
 k = np.linspace(0, 1, len(chunk))[:, None]
 X.buf[int(2.4 * SR):int(2.4 * SR) + len(chunk)] += chunk * .55 * np.minimum(1, (1 - k) * 8)
-tt = np.arange(int(.6 * SR)) / SR
-X.add(np.sin(2 * np.pi * np.cumsum(900 - 600 * tt / .6 + 120 * np.sin(2 * np.pi * 30 * tt)) / SR) * .15 + np.diff(rng.standard_normal(len(tt) + 1)) * .06, 2.4, .6)
-X.add(pop(1800, 400, .08), 2.99, .4)
+tt = np.arange(int(.5 * SR)) / SR
+X.add(np.sin(2 * np.pi * np.cumsum(900 - 600 * tt / .5 + 120 * np.sin(2 * np.pi * 30 * tt)) / SR) * .15 + np.diff(rng.standard_normal(len(tt) + 1)) * .06, 2.4, .6)
+X.add(pop(1800, 400, .08), OFF - .01, .4)
 
 # ---------- utilidades ----------
 def lp_noise(m, a):
@@ -71,10 +74,12 @@ def boom():
 def giggle(t0, n=5, base=1700):
     for k in range(n): X.add(chirp(base + 300 * (k % 2), base + 600, .06), t0 + k * .12, .22, .2)
 
-# ---------- GANCHO (vídeo 0–2.4: historia 25.25–27.65, a cámara lenta) ----------
-X.add(slow(boom(), 1.6), 0.0, .9); X.add(slow(crash(), 2), 0.0, .3); X.add(slow(whoosh(.5), 3), .05, .6)
-for k in range(14): X.add(slow(kpop(.8 + (k * .37) % 1 * .4), 3), .15 + k * .16, .18, (-1) ** k * .5)
-for g in (25.75, 26.45, 27.1): X.add(slow(chirp(500, 250, .12), 2.5), g - 25.25, .3)   # tragos a cámara lenta
+# ---------- GANCHO (vídeo 0–2.4: historia 24.5–26.65): Mochi en la olla… ¡BOOM! y vuelo a cámara lenta ----------
+for k in range(4): X.add(kpop(.9 + k * .05), .0 + k * .025, .3, (-1) ** k * .4)   # la olla a punto de estallar
+X.add(boom(), HV(24.6), 1.0); X.add(crash(), HV(24.6), .35); X.add(whoosh(.5), HV(24.62), .7)
+X.add(slow(whoosh(.6), 4), HV(24.85), .55)
+for k in range(12): X.add(slow(kpop(.8 + (k * .37) % 1 * .4), 3), HV(24.9) + k * .13, .18, (-1) ** k * .5)
+for g in (25.75, 26.45): X.add(slow(chirp(500, 250, .12), 2.5), HV(g), .3)   # tragos a cámara lenta
 
 # ---------- 1 (s 0–4.6): Pip hace palomitas ----------
 for i in range(3): X.add(pop(2600, 2200, .04), V(.62 + i * .18), .25)       # granitos al fondo de la olla
