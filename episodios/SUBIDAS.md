@@ -1,4 +1,4 @@
-# Mochi & Pip — Episodios 3 a 9 (listos para subir)
+# Mochi & Pip — Episodios 3 a 10 (listos para subir)
 
 Orden recomendado (alterna 3D / 2D original para la prueba A/B). Sube **uno cada día**, siempre a la misma hora.
 En todos: **Público** · **"Sí, es contenido creado para niños"** · Categoría **Cine y animación** · Lista **Mochi & Pip**.
@@ -113,6 +113,29 @@ Generarlo: `python3 audio/musica_ep9.py && node render.js --page ep9.html --out 
 
 ---
 
+## Ep. 10 · 3D · "Popcorn" 🍿 — `salida/ep10_popcorn.mp4` (36 s)
+Gancho: empieza con la explosión de palomitas a cámara lenta (Mochi volando), rebobina estilo VHS y cuenta la historia.
+**Título:** `Mochi put the WHOLE bag in the pot 🍿💥 #shorts`
+**Descripción:**
+```
+Pip makes a tiny bowl of popcorn 🍿 Mochi wants MORE... so he dumps in the WHOLE bag 😹💥
+Wait for the slow motion! 👀🐱🐭
+
+New Mochi & Pip cartoon every week ❤️
+
+Music: "Fluffing a Duck" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+#shorts #cartoon #animation #cat #kids #funny #popcorn
+```
+**Títulos traducidos:** ES `Mochi echó TODA la bolsa en la olla 🍿💥 #shorts` · PT `Mochi colocou o saco INTEIRO na panela 🍿💥 #shorts` · FR `Mochi a mis TOUT le sac dans la casserole 🍿💥 #shorts` · HI `मोची ने पूरा थैला बर्तन में डाल दिया 🍿💥 #shorts` · ID `Mochi masukin SEMUA jagung ke panci 🍿💥 #shorts`
+
+Generarlo: `python3 audio/musica_ep10.py && node render.js --page ep10.html --out ep10_popcorn.mp4 --audio salida/musica_ep10.wav`
+(la canción está en `audio/canciones/`; su crédito, en `audio/canciones/CREDITOS.md`).
+
+---
+
 ## Tabla para la prueba A/B (rellénala a las 48 h y a los 7 días)
 | Ep | Estilo | Fecha/hora | Vistas 48 h | Vistas 7 d | % "Se ha visto" | Suscriptores ganados |
 |---|---|---|---|---|---|---|
@@ -125,5 +148,6 @@ Generarlo: `python3 audio/musica_ep9.py && node render.js --page ep9.html --out 
 | 7 | 3D | | | | | |
 | 8 | 2D original | | | | | |
 | 9 | 3D | | | | | |
+| 10 | 3D | | | | | |
 
 Cuando tengas los números, pásamelos y te digo qué estilo gana y cómo seguir.
