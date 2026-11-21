@@ -9,7 +9,7 @@ const overlay = document.createElement('canvas'); overlay.width = W; overlay.hei
 const ctx = overlay.getContext('2d');
 
 // ---------- renderer ----------
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true, premultipliedAlpha: false });
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true, premultipliedAlpha: true });   // el búfer ya está premultiplicado: así lo semitransparente no se oscurece al componer
 renderer.setPixelRatio(1);
 renderer.setSize(W, H, false);
 renderer.shadowMap.enabled = true;

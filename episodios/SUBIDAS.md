@@ -1,4 +1,4 @@
-# Mochi & Pip — Episodios 3 a 10 (listos para subir)
+# Mochi & Pip — Episodios 3 a 11 (listos para subir)
 
 Orden recomendado (alterna 3D / 2D original para la prueba A/B). Sube **uno cada día**, siempre a la misma hora.
 En todos: **Público** · **"Sí, es contenido creado para niños"** · Categoría **Cine y animación** · Lista **Mochi & Pip**.
@@ -136,6 +136,28 @@ Generarlo: `python3 audio/musica_ep10.py && node render.js --page ep10.html --ou
 
 ---
 
+## Ep. 11 · 3D · "Bubble gum" 🫧 — `salida/ep11_bubblegum.mp4` (35 s)
+Gancho: Mochi flota con un globo de chicle gigante y Pip lo pincha con un tenedor… ¡POP! a cámara lenta; rebobina (◀◀) y cuenta la historia. Letrero "Mochi & Pip" al final.
+**Título:** `Mochi blew the BIGGEST bubble ever 🫧😹 #shorts`
+**Descripción:**
+```
+Pip blows a tiny bubble 🫧 Mochi wants a BIGGER one... so he chews the WHOLE pack 😹
+Wait for the slow motion POP! 👀🐱🐭
+
+New Mochi & Pip cartoon every week ❤️
+
+Music: "Monkeys Spinning Monkeys" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+#shorts #cartoon #animation #cat #kids #funny #bubblegum
+```
+**Títulos traducidos:** ES `Mochi hizo el globo de chicle MÁS GRANDE 🫧😹 #shorts` · PT `Mochi fez a MAIOR bola de chiclete 🫧😹 #shorts` · FR `Mochi a fait la PLUS GROSSE bulle de chewing-gum 🫧😹 #shorts` · HI `मोची ने बनाया सबसे बड़ा बबल 🫧😹 #shorts` · ID `Mochi bikin gelembung permen karet TERBESAR 🫧😹 #shorts`
+
+Generarlo: `python3 audio/musica_ep11.py && node render.js --page ep11.html --out ep11_bubblegum.mp4 --audio salida/musica_ep11.wav`
+
+---
+
 ## Tabla para la prueba A/B (rellénala a las 48 h y a los 7 días)
 | Ep | Estilo | Fecha/hora | Vistas 48 h | Vistas 7 d | % "Se ha visto" | Suscriptores ganados |
 |---|---|---|---|---|---|---|
@@ -149,5 +171,6 @@ Generarlo: `python3 audio/musica_ep10.py && node render.js --page ep10.html --ou
 | 8 | 2D original | | | | | |
 | 9 | 3D | | | | | |
 | 10 | 3D | | | | | |
+| 11 | 3D | | | | | |
 
 Cuando tengas los números, pásamelos y te digo qué estilo gana y cómo seguir.
