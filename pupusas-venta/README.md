@@ -19,7 +19,7 @@ python3 musica.py          # -> salida/musica_<estilo>.wav/.mp3 para cada estilo
 python3 musica.py --usar marimba   # elige el estilo que va en el vídeo (salida/musica.wav)
 node render.js             # -> salida/pupusas_sin_audio.mp4  (prueba rápida: FPS=30 SUB=1 node render.js)
 ffmpeg -y -i salida/pupusas_sin_audio.mp4 -i salida/musica.wav \
-  -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart salida/pupusas_4x7.mp4
+  -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart salida/pupusas_4x7_general.mp4
 ```
 Requisitos: Node + Playwright, Python 3 + numpy + mido, ffmpeg, `apt install fluidsynth fluid-soundfont-gm`.
 
@@ -27,3 +27,7 @@ Música: `motor_audio.py` (MIDI → fluidsynth → efectos → master) y `estilo
 (marimba salvadoreña, xuc, cumbia de orquesta, chanchona, pito y tambor, merengue, urbano, pop y la cumbia de acordeón).
 
 Textos editables al final de `animacion.html` (función `scene3`) y en `scene1` / `scene2`.
+
+## Versiones
+- `salida/pupusas_4x7_general.mp4` — para mandar a cualquiera (sin nombres), música de chanchona.
+- `salida/pupusas_4x7_dinora.mp4` — versión anterior con "Hechas por la Hna. Dinora y un gran equipo con ella".
