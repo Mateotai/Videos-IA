@@ -29,5 +29,6 @@ Música: `motor_audio.py` (MIDI → fluidsynth → efectos → master) y `estilo
 Textos editables al final de `animacion.html` (función `scene3`) y en `scene1` / `scene2`.
 
 ## Versiones
+(Se generan en `salida/`, que no se sube al repo.)
 - `salida/pupusas_4x7_general.mp4` — para mandar a cualquiera (sin nombres), música de chanchona.
 - `salida/pupusas_4x7_dinora.mp4` — versión anterior con "Hechas por la Hna. Dinora y un gran equipo con ella".

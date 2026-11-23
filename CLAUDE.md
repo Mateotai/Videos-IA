@@ -19,18 +19,21 @@ Lee esto antes de tocar nada: aquí está lo que no se puede improvisar.
 
 - El primer fotograma ya tiene que enganchar: algo raro o una cara en primer plano.
 - Un cambio cada 2–3 s. Cada golpe, salto y giro tiene su sonido.
-- La tarjeta final (`endCard(t, t0, N)`) anuncia el **siguiente** número de episodio.
+- La tarjeta final (`endCard(t, t0, N)`) anuncia el **siguiente** número de episodio (Ep. 3–8).
+- Desde el Ep. 10 la fórmula 3D es: **gancho a cámara lenta (el clímax) → rebobinado VHS ◀◀ → la historia desde el principio → letrero «Mochi & Pip» arriba al final** (sin «PART», con destello y campanita). Ver `ep10.js`–`ep12.js`.
 - Textos grandes y en la zona segura (arriba y centro), lejos de los botones de Shorts.
 
 ### Formato técnico
-Vertical **1080×1920, 60 fps**, H.264 + AAC 192k. Duración habitual 23–26 s (el Ep. 9 dura 42,5 s).
+Vertical **1080×1920, 60 fps**, H.264 + AAC 192k. Duración habitual 23–26 s en los Ep. 3–8; 35–40 s desde el Ep. 9.
 
 ## Estilos (prueba A/B en curso)
 | Estilo | Motor | Episodios |
 |---|---|---|
-| 2D original (plano con contorno, desenfoque de movimiento, muelles) | `episodios/common/flat2d.js` | 4, 6, 8, 9 |
-| 3D (Three.js) | `episodios/common/engine3d.js` (Ep. 1: `gatito-3d/escena.html`) | 1, 3, 5, 7 |
+| 2D original (plano con contorno, desenfoque de movimiento, muelles) | `episodios/common/flat2d.js` | 4, 6, 8 (y las versiones alternativas del 9) |
+| 3D (Three.js) | `episodios/common/engine3d.js` (+ `kitchen3d.js`, cocina común desde el Ep. 9; Ep. 1: `gatito-3d/escena.html`) | 1, 3, 5, 7, 9, 10, 11, 12 |
 | 2D «serie de TV» (rig cut-out) | `mochi-tv/engine.js` | 2 (y una versión alternativa del 1) |
+
+**Ep. 9 tiene tres versiones**, hechas en sesiones distintas: `ep9` (3D «Pancakes», la oficial, la que siguen los Ep. 10–12), `ep9_2d` (2D «Pancake») y `ep9_fishing` (2D «Gone fishing»). Las tres están en `SUBIDAS.md`.
 
 Se alternan estilos y se apuntan las métricas en la tabla A/B de `episodios/SUBIDAS.md`. Pregunta al usuario qué estilo toca si no está claro.
 
@@ -40,11 +43,14 @@ Se alternan estilos y se apuntan las métricas en la tabla A/B de `episodios/SUB
   - `common/flat2d.js`, `common/engine3d.js`: motores. Cada episodio define `DURATION` y su escena.
   - `epN.html` + `epN.js`: un episodio (guion = fotogramas clave). El `.js` empieza con un comentario que resume la historia.
   - `audio/sintes.py` (sintetizador con numpy) + `audio/musica_epN.py` → `salida/musica_epN.wav`.
+  - `audio/canciones/`: canciones de Kevin MacLeod (CC BY 4.0) que usan los Ep. 10–12; el crédito va en la descripción del vídeo y está en `CREDITOS.md`.
+  - `marca/`: logo nuevo (Mochi bípedo + Pip) y las propuestas de foto de perfil, con sus scripts.
   - `render.js`: renderiza con Playwright y codifica con ffmpeg.
   - `SUBIDAS.md`: títulos, descripciones, traducciones y tabla A/B de cada episodio.
 - `mochi-tv/`: Ep. 1 y 2 en estilo serie de TV (`PLAN.md` tiene la lista de ideas y el plan A/B).
 - `gatito-3d/`: piloto 3D, Ep. 1 global, y `marca/` (logo y banner del canal).
 - `gatito-galleta/`: piloto 2D original.
+- `pupusas-venta/`: anuncio «Venta de pupusas 4 x 7 €» (no es de Mochi & Pip; música con fluidsynth). Ver su README.
 - `salida/` en cada proyecto: renders locales, **ignorados por Git**.
 
 ## Hacer un episodio nuevo
