@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Venta de pupusas</title>
+<style>
+  @font-face { font-family: 'Fredoka'; font-weight: 700; src: url('fonts/fredoka-latin-700-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Fredoka'; font-weight: 600; src: url('fonts/fredoka-latin-600-normal.woff2') format('woff2'); }
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; margin: 0 auto; max-height: 100vh; max-width: 100vw; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// ============================================================
+//  Venta de pupusas · 4 x 7 €  —  anuncio vertical 1080x1920
+//  render(t) es una función pura del tiempo (segundos).
+//  Línea de tiempo (120 BPM, 1 compás = 2 s):
+//   0.0  Gancho: "¡PUPUSAS!" + pupusa gigante
+//   2.3  La pupusa cae al comal  ·  4.0 se voltea
+//   5.9  Salta al plato  ·  6.5/7/7.5/8 llegan 1-2-3-4
+//   8.5  curtido y salsa  ·  9.0 sello "SOLO 7 €"
+//  11.0  Calendario: sábado 28 de noviembre
+//  15.0  Cartel final  ·  18.0 golpe final
+// ============================================================
+const W = 1080, H = 1920, DURATION = 20;
+window.DURATION = DURATION;
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+
+// ---------- utilidades ----------
+const cl = x => Math.max(0, Math.min(1, x));
+const seg = (t, a, b) => cl((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const eOut = x => 1 - Math.pow(1 - x, 3);
+const eIn = x => x * x * x;
+const eInOut = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eBack = x => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const eElastic = x => x <= 0 ? 0 : x >= 1 ? 1 : Math.pow(2, -10 * x) * Math.sin((x * 10 - .75) * 2 * Math.PI / 3) + 1;
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// "golpe" de escala al ritmo: 1 + amp * caída exponencial tras cada pulso
+const beatPulse = (t, amp = .03, period = .5) => { const p = (t % period) / period; return 1 + amp * (p < .1 ? Math.sin(p / .1 * Math.PI / 2) : Math.exp(-(p - .1) * 6)); };
+
+// ---------- paleta ----------
+const C = {
+  ink: '#4A220B', cream: '#FFF6E0', red: '#E63946', redD: '#B5202D', blue: '#1F5BD6', blueD: '#123A8F',
+  yellow: '#FFD23F', orange: '#FF8C1A', white: '#FFFFFF', green: '#3FA34D',
+};
+
+// ---------- texto ----------
+const FONT = 'Fredoka';
+function text(str, x, y, size, o = {}) {
+  const { fill = C.white, stroke = C.ink, sw = size * .17, rot = 0, sc = 1, alpha = 1, maxW = 980, weight = 700, shadow = true, align = 'center' } = o;
+  if (alpha <= 0 || sc <= 0) return;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.translate(x, y); ctx.rotate(rot);
+  ctx.font = `${weight} ${size}px ${FONT}`;
+  const w = ctx.measureText(str).width;
+  const fit = Math.min(1, maxW / w);
+  ctx.scale(sc * fit, sc * fit);
+  ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round'; ctx.miterLimit = 2;
+  if (shadow) { ctx.fillStyle = 'rgba(60,20,0,.35)'; ctx.strokeStyle = 'rgba(60,20,0,.35)'; ctx.lineWidth = sw; ctx.strokeText(str, 0, size * .09); ctx.fillText(str, 0, size * .09); }
+  if (sw > 0) { ctx.strokeStyle = stroke; ctx.lineWidth = sw; ctx.strokeText(str, 0, 0); }
+  ctx.fillStyle = fill; ctx.fillText(str, 0, 0);
+  ctx.restore();
+}
+// Texto letra a letra que cae rebotando
+function bouncyWord(str, cx, y, size, t, t0, o = {}) {
+  ctx.font = `700 ${size}px ${FONT}`;
+  const ws = [...str].map(ch => ctx.measureText(ch).width);
+  const total = ws.reduce((a, b) => a + b, 0);
+  let x = cx - total / 2;
+  [...str].forEach((ch, i) => {
+    const k = seg(t, t0 + i * .055, t0 + i * .055 + .45);
+    if (k > 0) {
+      const yy = y - (1 - eBack(k)) * 260;
+      const wob = Math.sin(t * 5 + i * .9) * .04;
+      text(ch, x + ws[i] / 2, yy + Math.sin(t * 4 + i * .7) * 6, size, { ...o, rot: wob, sc: lerp(.4, 1, eOut(k)), alpha: cl(k * 3) * (o.alpha ?? 1) });
+    }
+    x += ws[i];
+  });
+}
+
+// ---------- formas ----------
+function rrect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+function starburst(x, y, r, n, rot, fill, sc = 1) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(sc, sc);
+  ctx.beginPath();
+  for (let i = 0; i < n * 2; i++) { const a = i * Math.PI / n, rr = i % 2 ? r * .84 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(60,20,0,.3)'; ctx.save(); ctx.translate(0, 14); ctx.fill(); ctx.restore();
+  ctx.fillStyle = fill; ctx.fill();
+  ctx.lineWidth = 12; ctx.strokeStyle = C.ink; ctx.lineJoin = 'round'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, r * .72, 0, Math.PI * 2); ctx.setLineDash([14, 12]); ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.stroke(); ctx.setLineDash([]);
+  ctx.restore();
+}
+function ribbon(x, y, w, h, fill, str, size, sc = 1, rot = 0) {
+  if (sc <= 0) return;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(sc, sc);
+  const tail = h * .55;
+  // colas
+  ctx.fillStyle = C.redD;
+  for (const s of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(s * (w / 2 - 20), -h / 2 + 22); ctx.lineTo(s * (w / 2 + tail), -h / 2 + 22);
+    ctx.lineTo(s * (w / 2 + tail * .55), h / 4 + 11); ctx.lineTo(s * (w / 2 + tail), h / 2 + 22); ctx.lineTo(s * (w / 2 - 20), h / 2 + 22); ctx.closePath();
+    ctx.fill(); ctx.lineWidth = 8; ctx.strokeStyle = C.ink; ctx.lineJoin = 'round'; ctx.stroke();
+  }
+  rrect(-w / 2, -h / 2, w, h, 16); ctx.fillStyle = fill; ctx.fill(); ctx.lineWidth = 9; ctx.strokeStyle = C.ink; ctx.stroke();
+  ctx.restore();
+  text(str, x, y + 2, size, { sc, rot, sw: size * .12, maxW: w - 40, shadow: false });
+}
+
+// ---------- pupusa ----------
+const pupCache = {};
+function pupShape(r, seed) {
+  const k = r + ':' + seed;
+  if (pupCache[k]) return pupCache[k];
+  const R = rng(seed * 97 + 3), p1 = R() * 6, p2 = R() * 6, p3 = R() * 6;
+  const p = new Path2D();
+  for (let i = 0; i <= 72; i++) {
+    const a = i / 72 * Math.PI * 2;
+    const rr = r * (1 + .035 * Math.sin(3 * a + p1) + .025 * Math.sin(5 * a + p2) + .012 * Math.sin(9 * a + p3));
+    i ? p.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : p.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+  }
+  p.closePath();
+  return (pupCache[k] = p);
+}
+// tilt: 1 = vista cenital, ~.45 = en perspectiva; negativo = cara de abajo (al voltear)
+function pupusa(x, y, r, o = {}) {
+  const { tilt = 1, rot = 0, char = 1, seed = 1, sq = 1 } = o;
+  const at = Math.max(.02, Math.abs(tilt));
+  const th = r * .17 * (1 - at) + r * .03;
+  const shape = pupShape(r, seed);
+  ctx.save(); ctx.translate(x, y); ctx.scale(1 / Math.sqrt(sq), sq);
+  // sombra
+  ctx.save(); ctx.translate(0, th + r * at * .12); ctx.scale(1.02, at * .98); ctx.fillStyle = 'rgba(60,20,0,.25)'; ctx.fill(pupShape(r * 1.02, seed)); ctx.restore();
+  // canto (grosor)
+  const steps = 6;
+  for (let s = steps; s >= 0; s--) {
+    ctx.save(); ctx.translate(0, th * s / steps); ctx.scale(1, at); ctx.rotate(rot);
+    ctx.fillStyle = s === steps ? '#C98E3E' : '#DDB063'; ctx.fill(shape);
+    if (s === steps) { ctx.lineWidth = 6 / at; ctx.strokeStyle = C.ink; ctx.stroke(shape); }
+    ctx.restore();
+  }
+  // cara superior
+  ctx.save(); ctx.scale(1, at); ctx.rotate(rot);
+  const g = ctx.createRadialGradient(-r * .2, -r * .25, r * .1, 0, 0, r);
+  g.addColorStop(0, '#FCE9B2'); g.addColorStop(.7, '#F2C96E'); g.addColorStop(1, '#D99A3E');
+  ctx.fillStyle = g; ctx.fill(shape);
+  ctx.save(); ctx.clip(shape);
+  const Rn = rng(seed * 31 + (tilt < 0 ? 777 : 0));
+  // queso que se asoma (dorado)
+  for (let i = 0; i < 4; i++) {
+    const a = Rn() * Math.PI * 2, d = r * (.55 + Rn() * .35), s = r * (.08 + Rn() * .1);
+    ctx.fillStyle = `rgba(250,175,10,${.75 * cl(char + .3)})`; ctx.beginPath(); ctx.ellipse(Math.cos(a) * d, Math.sin(a) * d, s * 1.4, s, a, 0, Math.PI * 2); ctx.fill();
+  }
+  // manchas tostadas
+  const nSp = 30;
+  for (let i = 0; i < nSp; i++) {
+    const a = Rn() * Math.PI * 2, d = Math.sqrt(Rn()) * r * .9, s = r * (.04 + Rn() * .11);
+    const sx = Math.cos(a) * d, sy = Math.sin(a) * d;
+    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, s);
+    const al = (.55 + Rn() * .45) * char;
+    sg.addColorStop(0, `rgba(70,28,6,${al})`); sg.addColorStop(.5, `rgba(130,62,18,${al * .7})`); sg.addColorStop(1, 'rgba(140,70,20,0)');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.ellipse(sx, sy, s * (1 + Rn() * .6), s, Rn() * 3, 0, Math.PI * 2); ctx.fill();
+  }
+  // motitas de masa
+  for (let i = 0; i < 30; i++) {
+    const a = Rn() * Math.PI * 2, d = Math.sqrt(Rn()) * r * .9;
+    ctx.fillStyle = 'rgba(255,250,230,.5)'; ctx.beginPath(); ctx.arc(Math.cos(a) * d, Math.sin(a) * d, r * .012 + Rn() * r * .012, 0, Math.PI * 2); ctx.fill();
+  }
+  // brillo
+  const hg = ctx.createRadialGradient(-r * .35, -r * .4, 0, -r * .35, -r * .4, r * .6);
+  hg.addColorStop(0, 'rgba(255,255,255,.35)'); hg.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = hg; ctx.fillRect(-r, -r, r * 2, r * 2);
+  ctx.restore();
+  ctx.lineWidth = 6 / at; ctx.strokeStyle = C.ink; ctx.stroke(shape);
+  ctx.restore();
+  ctx.restore();
+}
+
+// vapor: tres hilos ondulados que suben
+function steam(x, y, w, t, alpha = 1, hgt = 260) {
+  if (alpha <= 0) return;
+  ctx.save(); ctx.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    const ph = (t * .55 + i / 3) % 1;
+    const a = Math.sin(ph * Math.PI) * .75 * alpha;
+    const bx = x + (i - 1) * w * .35;
+    ctx.beginPath();
+    for (let k = 0; k <= 20; k++) {
+      const u = k / 20, yy = y - ph * hgt * .5 - u * hgt;
+      const xx = bx + Math.sin(u * 7 + t * 3 + i * 2) * w * .09 * (0.4 + u);
+      k ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
+    }
+    ctx.strokeStyle = `rgba(255,255,255,${a})`; ctx.lineWidth = 16 - i * 2; ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// plato (vista en perspectiva)
+const PLATE_TILT = .5;
+function plate(x, y, r, sc = 1) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc * PLATE_TILT);
+  ctx.fillStyle = 'rgba(60,20,0,.28)'; ctx.beginPath(); ctx.arc(0, 40, r * 1.02, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#E8EEF8'; ctx.beginPath(); ctx.arc(0, 22, r, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = C.white; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+  ctx.lineWidth = 12; ctx.strokeStyle = C.ink; ctx.stroke();
+  ctx.lineWidth = 26; ctx.strokeStyle = C.blue; ctx.beginPath(); ctx.arc(0, 0, r * .9, 0, Math.PI * 2); ctx.stroke();
+  ctx.lineWidth = 6; ctx.strokeStyle = C.white; ctx.setLineDash([18, 22]); ctx.beginPath(); ctx.arc(0, 0, r * .9, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = '#F2F5FB'; ctx.beginPath(); ctx.arc(0, 0, r * .8, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// tazón de curtido
+function curtido(x, y, r, sc = 1) {
+  if (sc <= 0) return;
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  // tazón de barro
+  ctx.fillStyle = 'rgba(60,20,0,.28)'; ctx.beginPath(); ctx.ellipse(0, r * .62, r * 1.02, r * .3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-r, 0); ctx.bezierCurveTo(-r, r * .75, r, r * .75, r, 0); ctx.closePath();
+  ctx.fillStyle = '#C4521C'; ctx.fill(); ctx.lineWidth = 9; ctx.strokeStyle = C.ink; ctx.stroke();
+  ctx.fillStyle = '#E2763A'; ctx.beginPath(); ctx.ellipse(0, r * .28, r * .7, r * .07, 0, 0, Math.PI * 2); ctx.fill();
+  // montón
+  ctx.save(); ctx.beginPath(); ctx.ellipse(0, -r * .05, r * .97, r * .5, 0, Math.PI, 0); ctx.ellipse(0, 0, r * .97, r * .3, 0, 0, Math.PI); ctx.closePath();
+  ctx.fillStyle = '#EEF3C8'; ctx.fill(); ctx.clip();
+  const R = rng(42); ctx.lineCap = 'round';
+  const cols = ['#F7F9E4', '#DCE9A8', '#C9DC86', '#FF8C1A', '#FF9F3A', '#F7F9E4', '#2F8F3E'];
+  for (let i = 0; i < 140; i++) {
+    const cx = (R() * 2 - 1) * r, cy = -r * .45 + R() * r * .8, L = r * (.12 + R() * .2), a = R() * Math.PI;
+    const c = cols[Math.floor(R() * cols.length)];
+    ctx.strokeStyle = c; ctx.lineWidth = c === '#2F8F3E' ? 6 : 7 + R() * 4;
+    ctx.beginPath(); ctx.moveTo(cx - Math.cos(a) * L, cy - Math.sin(a) * L * .4);
+    ctx.quadraticCurveTo(cx, cy - L * .3, cx + Math.cos(a) * L, cy + Math.sin(a) * L * .4); ctx.stroke();
+  }
+  ctx.restore();
+  ctx.beginPath(); ctx.ellipse(0, -r * .05, r * .97, r * .5, 0, Math.PI, 0); ctx.lineWidth = 7; ctx.strokeStyle = C.ink; ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, 0, r, r * .3, 0, 0, Math.PI * 2); ctx.lineWidth = 9; ctx.stroke();
+  ctx.restore();
+}
+
+// tacita de salsa de tomate
+function salsa(x, y, r, sc = 1) {
+  if (sc <= 0) return;
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  ctx.fillStyle = 'rgba(60,20,0,.28)'; ctx.beginPath(); ctx.ellipse(0, r * .62, r * 1.02, r * .3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-r, 0); ctx.bezierCurveTo(-r, r * .8, r, r * .8, r, 0); ctx.closePath();
+  ctx.fillStyle = C.white; ctx.fill(); ctx.lineWidth = 9; ctx.strokeStyle = C.ink; ctx.stroke();
+  ctx.fillStyle = C.blue; ctx.beginPath(); ctx.ellipse(0, r * .3, r * .78, r * .09, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0, 0, r, r * .32, 0, 0, Math.PI * 2); ctx.fillStyle = '#EEF2FA'; ctx.fill(); ctx.lineWidth = 9; ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, r * .02, r * .84, r * .25, 0, 0, Math.PI * 2);
+  const g = ctx.createRadialGradient(-r * .2, -r * .05, 0, 0, 0, r * .85); g.addColorStop(0, '#F0592E'); g.addColorStop(1, '#B3181C');
+  ctx.fillStyle = g; ctx.fill();
+  ctx.save(); ctx.clip(); const R = rng(7);
+  for (let i = 0; i < 40; i++) { ctx.fillStyle = R() < .5 ? 'rgba(255,170,60,.7)' : 'rgba(120,10,10,.5)'; ctx.beginPath(); ctx.arc((R() * 2 - 1) * r * .8, (R() * 2 - 1) * r * .22, 3 + R() * 5, 0, 7); ctx.fill(); }
+  ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.beginPath(); ctx.ellipse(-r * .35, -r * .08, r * .2, r * .05, -.1, 0, 7); ctx.fill();
+  ctx.restore();
+  ctx.restore();
+}
+
+// comal con fuego debajo
+function comal(x, y, t, sc = 1) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  const rx = 440, ry = 170;
+  // llamas
+  for (let i = 0; i < 9; i++) {
+    const fx = (i - 4) * 80, fl = 1 + .25 * Math.sin(t * 13 + i * 2.1) + .15 * Math.sin(t * 21 + i);
+    const hgt = (90 + (i % 3) * 25) * fl;
+    for (const [col, k] of [['#FF6B1A', 1], ['#FFC93C', .62], ['#FFF3B0', .3]]) {
+      ctx.fillStyle = col; ctx.beginPath();
+      ctx.moveTo(fx - 38 * k, ry + 120); ctx.quadraticCurveTo(fx - 40 * k, ry + 120 - hgt * k * .6, fx + Math.sin(t * 9 + i) * 10, ry + 120 - hgt * k);
+      ctx.quadraticCurveTo(fx + 40 * k, ry + 120 - hgt * k * .6, fx + 38 * k, ry + 120); ctx.closePath(); ctx.fill();
+    }
+  }
+  // asas
+  ctx.fillStyle = '#2A2A2E'; ctx.strokeStyle = C.ink; ctx.lineWidth = 9;
+  for (const s of [-1, 1]) { rrect(s > 0 ? rx - 30 : -rx - 70, -18, 100, 40, 18); ctx.fill(); ctx.stroke(); }
+  // canto
+  ctx.fillStyle = '#1D1D21'; ctx.beginPath(); ctx.ellipse(0, 26, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 10; ctx.stroke();
+  ctx.fillRect(-rx, 0, rx * 2, 26);
+  // superficie
+  const g = ctx.createRadialGradient(-80, -50, 20, 0, 0, rx);
+  g.addColorStop(0, '#55555C'); g.addColorStop(1, '#2B2B30');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(0, 0, rx * .85, ry * .82, 0, Math.PI * 1.05, Math.PI * 1.55); ctx.stroke();
+  ctx.restore();
+}
+
+// ---------- fondos ----------
+function background(t, theme) {
+  const warm = theme === 'warm';
+  const g = ctx.createRadialGradient(540, 860, 80, 540, 960, 1250);
+  if (warm) { g.addColorStop(0, '#FFE08A'); g.addColorStop(.5, '#FFB238'); g.addColorStop(1, '#F06A0F'); }
+  else { g.addColorStop(0, '#6FA8FF'); g.addColorStop(.55, '#2F6BE0'); g.addColorStop(1, '#13348F'); }
+  ctx.fillStyle = g; ctx.fillRect(-80, -80, W + 160, H + 160);
+  // rayos de sol giratorios
+  ctx.save(); ctx.translate(540, 900); ctx.rotate(t * .12);
+  ctx.fillStyle = warm ? 'rgba(255,255,255,.13)' : 'rgba(255,255,255,.08)';
+  const n = 18;
+  for (let i = 0; i < n; i++) {
+    const a = i / n * Math.PI * 2;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 2000, a, a + Math.PI / n); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  // círculos flotantes de fondo
+  const R = rng(warm ? 5 : 9);
+  for (let i = 0; i < 16; i++) {
+    const x = R() * W, sp = 40 + R() * 70, rr = 18 + R() * 50;
+    const y = ((R() * (H + 300) - t * sp) % (H + 300) + H + 300) % (H + 300) - 150;
+    ctx.fillStyle = warm ? 'rgba(255,248,225,.22)' : 'rgba(255,255,255,.12)';
+    ctx.beginPath(); ctx.arc(x + Math.sin(t + i) * 20, y, rr, 0, Math.PI * 2); ctx.fill();
+  }
+  // viñeta
+  const v = ctx.createRadialGradient(540, 960, 600, 540, 960, 1300);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(40,10,0,.35)');
+  ctx.fillStyle = v; ctx.fillRect(-80, -80, W + 160, H + 160);
+}
+
+// ---------- partículas ----------
+function confetti(t, t0, x, y, n, seed, spread = 1) {
+  const dt = t - t0; if (dt < 0 || dt > 3) return;
+  const R = rng(seed);
+  const cols = [C.red, C.yellow, C.blue, '#FFFFFF', C.green, '#FF8C1A'];
+  for (let i = 0; i < n; i++) {
+    const a = R() * Math.PI * 2, sp = (500 + R() * 1100) * spread;
+    const vx = Math.cos(a) * sp, vy = Math.sin(a) * sp - 700;
+    const drag = Math.exp(-dt * 1.6);
+    const px = x + vx * (1 - drag) / 1.6, py = y + vy * (1 - drag) / 1.6 + 650 * dt * dt * .5 + 120 * dt;
+    const rot = R() * 6 + dt * (R() * 14 - 7);
+    const al = cl(1 - (dt - 1.8) / 1.2);
+    ctx.save(); ctx.globalAlpha = al; ctx.translate(px + Math.sin(dt * 6 + i) * 12, py); ctx.rotate(rot); ctx.scale(1, Math.cos(dt * 9 + i));
+    ctx.fillStyle = cols[i % cols.length]; ctx.fillRect(-10, -6, 20, 12);
+    ctx.restore();
+  }
+}
+function puff(t, t0, x, y, seed, sc = 1) {
+  const dt = t - t0; if (dt < 0 || dt > .6) return;
+  const k = dt / .6, R = rng(seed);
+  for (let i = 0; i < 9; i++) {
+    const a = R() * Math.PI * 2, d = (60 + R() * 90) * eOut(k) * sc;
+    ctx.fillStyle = `rgba(255,255,255,${.85 * (1 - k)})`;
+    ctx.beginPath(); ctx.arc(x + Math.cos(a) * d * 1.6, y + Math.sin(a) * d * .5, (18 + R() * 16) * (1 - k * .5) * sc, 0, 7); ctx.fill();
+  }
+}
+// líneas de impacto alrededor de un punto
+function burstLines(t, t0, x, y, r0, col = C.white) {
+  const k = seg(t, t0, t0 + .35); if (k <= 0 || k >= 1) return;
+  ctx.save(); ctx.strokeStyle = col; ctx.lineCap = 'round'; ctx.lineWidth = 12 * (1 - k);
+  for (let i = 0; i < 12; i++) {
+    const a = i / 12 * Math.PI * 2 + .2;
+    const a1 = r0 + eOut(k) * 140, a2 = r0 + 60 + eOut(k) * 200;
+    ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * a1, y + Math.sin(a) * a1); ctx.lineTo(x + Math.cos(a) * a2, y + Math.sin(a) * a2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ============================================================
+//  ESCENA 1 (0 – 11 s): gancho, comal y plato
+// ============================================================
+const PLATE = { x: 540, y: 1250, r: 420 };
+// posiciones de las 4 pupusas en el plato (vista cenital, luego se aplasta con PLATE_TILT)
+const SLOTS = [[-150, -95], [150, -95], [-105, 120], [125, 115]];
+const LAND = [6.5, 7.0, 7.5, 8.0];
+const FROM = [null, [-700, -900], [1800, -700], [540, -1300]];
+const PR = 165; // radio de pupusa en el plato
+
+function platePupusas(t, cx, cy, sc, landT = LAND, from = FROM, jiggle = true) {
+  for (let i = 0; i < 4; i++) {
+    const [sx, sy] = SLOTS[i];
+    const tx = cx + sx * sc, ty = cy + sy * PLATE_TILT * sc - 18 * sc;
+    const lt = landT[i];
+    if (t < lt - .45) continue;
+    let x = tx, y = ty, s = 1, rot = i * 1.3;
+    const k = seg(t, lt - .45, lt);
+    if (k < 1 && from[i]) {
+      const [fx, fy] = from[i];
+      const e = eInOut(k);
+      x = lerp(fx, tx, e); y = lerp(fy, ty, e) - Math.sin(k * Math.PI) * 250;
+      rot += (1 - k) * 4;
+    }
+    // aplastón al aterrizar
+    const land = t - lt; let sq = 1;
+    if (land > 0 && land < .5) sq = 1 - .2 * Math.exp(-land * 8) * Math.sin(land * 26);
+    if (jiggle) y += Math.sin(t * 3 + i) * 3;
+    pupusa(x, y, PR * sc * s, { tilt: PLATE_TILT + .08, rot, char: 1, seed: 10 + i, sq });
+  }
+}
+
+function scene1(t) {
+  background(t, 'warm');
+
+  // ---------- Gancho (0 – 2.6) ----------
+  const outHook = seg(t, 2.15, 2.55);
+  if (t < 2.7) {
+    // título letra a letra
+    const ty = 360 - eIn(outHook) * 700;
+    bouncyWord('¡PUPUSAS!', 540, ty, 205, t, -0.3, { fill: C.yellow, sw: 34 });
+    // cinta "GRAN VENTA"
+    const rk = seg(t, .55, .95);
+    ribbon(540, 590 - eIn(outHook) * 900, 560, 110, C.red, 'GRAN VENTA', 72, eBack(rk), -.03 + Math.sin(t * 3) * .015);
+  }
+
+  // ---------- pupusa protagonista (0 – 6.5) ----------
+  // posición/tamaño a lo largo del gancho → comal → salto al plato
+  const comalIn = eOut(seg(t, 2.05, 2.7));
+  const comalOut = eIn(seg(t, 5.85, 6.35));
+  const comalY = lerp(2300, 1330, comalIn) + comalOut * 1000;
+  if (t > 2.0 && t < 6.5) {
+    comal(540, comalY, t);
+  }
+
+  if (t < 6.5) {
+    let x = 540, y, r, tilt, char, rot, sq = 1, side = 1;
+    // gancho: gigante y girando con zoom-out inicial
+    const z = 1 + .35 * (1 - eOut(seg(t, 0, .6)));
+    const hookR = 360 * z * beatPulse(t, .025);
+    const hookY = 1120 + Math.sin(t * 2.5) * 12;
+    const haloA = 1 - seg(t, 2.05, 2.45);
+    if (t < 2.3) {
+      r = hookR; y = hookY; tilt = 1; char = 1; rot = t * .5;
+      ctx.save(); ctx.globalAlpha = .5 * haloA; starburst(540, hookY, r * 1.28 * (1 + .3 * (1 - haloA)), 24, -t * .3, '#FFF1B8'); ctx.restore();
+    } else {
+      // cae al comal (2.3 – 2.75)
+      const k = seg(t, 2.3, 2.75);
+      const e = eIn(k);
+      const restY = comalY - 40;
+      r = lerp(hookR, 250, eOut(k)); y = lerp(hookY, restY, e);
+      if (haloA > 0) { ctx.save(); ctx.globalAlpha = .5 * haloA; starburst(540, hookY, hookR * 1.28 * (1 + .3 * (1 - haloA)), 24, -t * .3, '#FFF1B8'); ctx.restore(); } tilt = lerp(1, .42, eOut(k)); char = 1; rot = 2.3 * .5 + k * .6;
+      const land = t - 2.75;
+      if (land > 0 && land < .6) sq = 1 - .22 * Math.exp(-land * 8) * Math.sin(land * 26);
+      // volteo (3.85 – 4.4)
+      const f = seg(t, 3.85, 4.4);
+      if (f > 0 && f < 1) {
+        y -= Math.sin(f * Math.PI) * 330;
+        tilt = .42 * Math.cos(f * Math.PI * 2) ; // da una vuelta completa
+        rot += f * 1.2;
+        side = Math.cos(f * Math.PI * 2) * 0 + (f < .25 || f > .75 ? 1 : -1);
+      }
+      const land2 = t - 4.4;
+      if (land2 > 0 && land2 < .6) sq = 1 - .22 * Math.exp(-land2 * 8) * Math.sin(land2 * 26);
+      if (f >= 1) rot += 1.2;
+      // salto al plato (5.9 – 6.5)
+      const j = seg(t, 5.9, 6.5);
+      if (j > 0) {
+        const [sx, sy] = SLOTS[0];
+        const tx = PLATE.x + sx, ty = PLATE.y + Math.sin(t * 2) * 6 + sy * PLATE_TILT - 18 + Math.sin(t * 3) * 3;
+        const e2 = eInOut(j);
+        const rot0 = rot;
+        x = lerp(540, tx, e2); y = lerp(restY - (comalOut * 1000), ty, e2) - Math.sin(j * Math.PI) * 520;
+        r = lerp(250, PR, e2); tilt = lerp(.42, PLATE_TILT + .08, e2); rot = lerp(rot0, Math.PI * 4, e2);
+      } else if (t > 2.75) {
+        y += Math.sin(t * 6) * 3; // chisporroteo
+      }
+      tilt = side < 0 ? -Math.abs(tilt) : tilt;
+    }
+    if (t < 6.5) {
+      pupusa(x, y, r, { tilt, rot, char, seed: 10, sq });
+      steam(x, y - r * Math.abs(tilt) * .4, r * 1.2, t, lerp(.9, 1, seg(t, 2.3, 2.75)) * (1 - seg(t, 5.9, 6.1)), lerp(300, 360, seg(t, 2.3, 2.75)));
+    }
+  }
+  burstLines(t, 2.75, 540, comalY - 40, 260);
+  burstLines(t, 4.4, 540, comalY - 40, 260);
+
+  // textos del comal
+  const tA = seg(t, 2.75, 3.15), tAo = seg(t, 4.0, 4.25);
+  if (tA > 0 && tAo < 1) {
+    text('Hechas a mano', 540, 470, 118, { fill: C.white, sc: eBack(tA) * (1 - eIn(tAo)), rot: -.03 });
+    text('en comal', 540, 610, 92, { fill: C.yellow, sc: eBack(seg(t, 2.95, 3.35)) * (1 - eIn(tAo)), rot: .03 });
+  }
+  const tB = seg(t, 4.35, 4.75), tBo = seg(t, 5.7, 5.95);
+  if (tB > 0 && tBo < 1) {
+    text('¡Bien', 540, 450, 120, { fill: C.white, sc: eBack(tB) * (1 - eIn(tBo)), rot: -.04 });
+    text('calientitas!', 540, 590, 140, { fill: C.yellow, sc: eBack(seg(t, 4.5, 4.9)) * (1 - eIn(tBo)), rot: .03 });
+  }
+
+  // ---------- Plato (6 – 11) ----------
+  const pk = seg(t, 5.95, 6.35);
+  if (pk > 0) {
+    const bob = Math.sin(t * 2) * 6;
+    plate(PLATE.x, PLATE.y + bob, PLATE.r, eBack(pk));
+    if (t >= 6.5) platePupusas(t, PLATE.x, PLATE.y + bob, 1);
+    for (let i = 0; i < 4; i++) puff(t, LAND[i], PLATE.x + SLOTS[i][0], PLATE.y + SLOTS[i][1] * PLATE_TILT + 30, 50 + i, .8);
+    if (t > 8.2) steam(PLATE.x, PLATE.y - 60, 420, t, seg(t, 8.2, 8.8), 380);
+    // acompañamientos
+    const ck = seg(t, 8.45, 8.85), sk = seg(t, 8.6, 9.0);
+    curtido(lerp(-300, 205, eOut(ck)), 1555 + Math.sin(t * 2.2) * 5, 150, ck > 0 ? 1 : 0);
+    salsa(lerp(1380, 880, eOut(sk)), 1560 + Math.sin(t * 2.2 + 1) * 5, 125, sk > 0 ? 1 : 0);
+    const lk = seg(t, 8.8, 9.15);
+    text('con curtido y salsa', 540, 1790, 76, { fill: C.white, sc: eBack(lk) });
+  }
+
+  // contador 1-2-3-4
+  for (let i = 0; i < 4; i++) {
+    const s0 = LAND[i] - .06, s1 = i < 3 ? LAND[i + 1] - .06 : 8.3;
+    if (t >= s0 && t < s1 + .22) {
+      const k = seg(t, s0, s0 + .25);
+      const out = eOut(seg(t, s1, s1 + .22));
+      text(String(i + 1), 540, 470 - out * 60, 300, { fill: [C.yellow, C.white, C.yellow, C.white][i], sc: eBack(k) * (1 + out * .5), alpha: 1 - out, rot: (i % 2 ? .08 : -.08) * (1 + out), sw: 40 });
+    }
+  }
+  const ttl = seg(t, 8.3, 8.65);
+  if (ttl > 0) {
+    text('4 PUPUSAS', 540, 330, 150, { fill: C.yellow, sc: eBack(ttl) * beatPulse(t, .03), rot: -.02, sw: 28 });
+  }
+
+  confetti(t, 9.0, 540, 700, 90, 3);
+  // sello de precio
+  const st = t - 9.0;
+  if (st > -.25) {
+    const k = seg(t, 8.75, 9.0);
+    const sc = st < 0 ? lerp(3.2, 1, eIn(k)) : 1 - .14 * Math.exp(-st * 7) * Math.sin(st * 22);
+    const al = cl(k * 3);
+    ctx.save(); ctx.globalAlpha = al;
+    const bx = 540, by = 700;
+    starburst(bx, by, 225, 18, t * .25, C.red, sc * beatPulse(t, .02));
+    ctx.restore();
+    text('SOLO', 540, 610, 62, { sc, alpha: al, sw: 10, shadow: false, rot: -.06 });
+    text('7 €', 548, 712, 168, { fill: C.yellow, sc, alpha: al, sw: 26, rot: -.06 });
+  }
+}
+
+// ============================================================
+//  ESCENA 2 (11 – 15 s): fecha
+// ============================================================
+function scene2(t) {
+  background(t, 'blue');
+  const tk = seg(t, 11.3, 11.7);
+  text('¡Aparta la fecha!', 540, 360, 120, { fill: C.yellow, sc: eBack(tk) * beatPulse(t, .02), rot: -.03, sw: 24 });
+
+  // calendario
+  const dk = seg(t, 11.15, 11.65);
+  const cy = lerp(-700, 1060, eBack(dk)) + Math.sin(t * 2) * 8;
+  const rot = -.05 + Math.sin(t * 1.6) * .02 + (1 - dk) * .3;
+  const cw = 660, ch = 720;
+  ctx.save(); ctx.translate(540, cy); ctx.rotate(rot);
+  // pila de hojas detrás
+  for (let i = 2; i >= 1; i--) { rrect(-cw / 2 + i * 10, -ch / 2 + i * 14, cw, ch, 40); ctx.fillStyle = '#DDE5F5'; ctx.fill(); ctx.lineWidth = 10; ctx.strokeStyle = C.ink; ctx.stroke(); }
+  ctx.fillStyle = 'rgba(0,0,40,.3)'; rrect(-cw / 2 + 16, -ch / 2 + 30, cw, ch, 40); ctx.fill();
+  rrect(-cw / 2, -ch / 2, cw, ch, 40); ctx.fillStyle = C.white; ctx.fill(); ctx.lineWidth = 12; ctx.strokeStyle = C.ink; ctx.stroke();
+  // cabecera roja
+  ctx.save(); rrect(-cw / 2, -ch / 2, cw, ch, 40); ctx.clip();
+  ctx.fillStyle = C.red; ctx.fillRect(-cw / 2, -ch / 2, cw, 190);
+  ctx.restore();
+  ctx.beginPath(); ctx.moveTo(-cw / 2, -ch / 2 + 190); ctx.lineTo(cw / 2, -ch / 2 + 190); ctx.lineWidth = 10; ctx.stroke();
+  // anillas
+  for (const s of [-1, 1]) {
+    ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(s * 170, -ch / 2 + 40, 18, 0, 7); ctx.fill();
+    rrect(s * 170 - 12, -ch / 2 - 50, 24, 100, 12); ctx.fillStyle = '#C9CED8'; ctx.fill(); ctx.lineWidth = 7; ctx.stroke();
+  }
+  ctx.restore();
+
+  const toCal = (dx, dy) => [540 + dx * Math.cos(rot) - dy * Math.sin(rot), cy + dx * Math.sin(rot) + dy * Math.cos(rot)];
+  let [hx, hy] = toCal(0, -ch / 2 + 115);
+  text('NOVIEMBRE', hx, hy, 84, { rot, sw: 14, shadow: false, maxW: 600 });
+
+  // número que corre de 19 a 28
+  const nk = seg(t, 11.6, 12.5);
+  const day = Math.min(28, 19 + Math.floor(nk * 10));
+  const landK = t - 12.5;
+  const nsc = landK > 0 ? 1 + .3 * Math.exp(-landK * 6) * Math.sin(landK * 20) : 1 - .05 * cl(-landK * 4) * (1 - Math.cos(t * 40)) ;
+  [hx, hy] = toCal(0, 70);
+  text(String(day), hx, hy, 330, { rot, fill: day === 28 ? C.red : C.ink, stroke: C.ink, sw: day === 28 ? 22 : 0, sc: dk > .5 ? nsc : 0, shadow: false });
+  [hx, hy] = toCal(0, 290);
+  text('SÁBADO', hx, hy, 80, { rot, fill: C.blue, sw: 0, shadow: false, sc: eBack(seg(t, 12.55, 12.9)) });
+
+  // círculo de rotulador alrededor del 28
+  const mk = seg(t, 12.7, 13.15);
+  if (mk > 0) {
+    ctx.save(); ctx.translate(...toCal(0, 70)); ctx.rotate(rot - .3);
+    ctx.strokeStyle = 'rgba(230,57,70,.85)'; ctx.lineWidth = 16; ctx.lineCap = 'round';
+    ctx.beginPath();
+    const steps = 60, end = eOut(mk) * 1.12;
+    for (let i = 0; i <= steps * end; i++) {
+      const a = i / steps * Math.PI * 2, rr = 1 + .05 * Math.sin(a * 3);
+      ctx.lineTo(Math.cos(a) * 250 * rr, Math.sin(a) * 175 * rr);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+  burstLines(t, 12.5, ...toCal(0, 70), 230, C.yellow);
+
+  // pupusitas que asoman en las esquinas
+  const pk = seg(t, 13.2, 13.6);
+  if (pk > 0) {
+    pupusa(170, 1560 + (1 - eBack(pk)) * 500, 120, { tilt: .55, rot: t, seed: 21 });
+    pupusa(910, 1580 + (1 - eBack(seg(t, 13.3, 13.7))) * 500, 120, { tilt: .55, rot: -t, seed: 22 });
+  }
+  text('¡No faltes!', 540, 1640, 110, { fill: C.white, sc: eBack(seg(t, 13.35, 13.75)) * beatPulse(t, .03), rot: .03 });
+}
+
+// ============================================================
+//  ESCENA 3 (15 – 20 s): cartel final
+// ============================================================
+function scene3(t) {
+  background(t, 'warm');
+  const hit = t - 18.0; // golpe final
+  const hitP = hit > 0 ? 1 + .07 * Math.exp(-hit * 5) * Math.sin(hit * 20) : 1;
+
+  text('VENTA DE', 540, 255, 86, { fill: C.white, sc: eBack(seg(t, 15.25, 15.6)), sw: 16 });
+  bouncyWord('PUPUSAS', 540, 390, 175, t, 15.35, { fill: C.yellow, sw: 30 });
+
+  // plato con las 4 pupusas
+  const pk = seg(t, 15.2, 15.65);
+  const py = 1010 + Math.sin(t * 2) * 6;
+  const sc = .82 * eBack(pk) * hitP;
+  if (pk > 0) {
+    plate(540, py, PLATE.r, sc);
+    const lt = [15.45, 15.55, 15.65, 15.75];
+    const from = [[540, -400], [540, -400], [540, -400], [540, -400]];
+    platePupusas(t, 540, py, sc, lt, from);
+    steam(540, py - 80, 380, t, seg(t, 16, 16.5), 330);
+  }
+  curtido(lerp(-300, 175, eOut(seg(t, 15.6, 16.0))), 1200, 120, t > 15.6 ? 1 : 0);
+  salsa(lerp(1380, 915, eOut(seg(t, 15.7, 16.1))), 1205, 100, t > 15.7 ? 1 : 0);
+
+  // sello de precio
+  const sk = seg(t, 15.75, 16.0), st = t - 16.0;
+  if (sk > 0) {
+    const ssc = (st < 0 ? lerp(3, 1, eIn(sk)) : 1 - .14 * Math.exp(-st * 7) * Math.sin(st * 22)) * hitP;
+    ctx.save(); ctx.globalAlpha = cl(sk * 3);
+    starburst(845, 640, 175, 16, t * .25, C.red, ssc);
+    ctx.restore();
+    text('4 por', 845, 575, 56, { sc: ssc, sw: 10, shadow: false, rot: .12, alpha: cl(sk * 3) });
+    text('7 €', 850, 665, 130, { fill: C.yellow, sc: ssc, sw: 22, rot: .12, alpha: cl(sk * 3) });
+  }
+
+  // tarjeta de información
+  const ik = seg(t, 16.1, 16.55);
+  const iy = lerp(2300, 1505, eBack(ik));
+  ctx.save(); ctx.translate(540, iy); ctx.rotate(-.015);
+  ctx.fillStyle = 'rgba(60,20,0,.3)'; rrect(-460, -150 + 16, 920, 300, 44); ctx.fill();
+  rrect(-460, -150, 920, 300, 44); ctx.fillStyle = C.cream; ctx.fill(); ctx.lineWidth = 12; ctx.strokeStyle = C.ink; ctx.stroke();
+  // franja azul y blanca (detalle salvadoreño)
+  ctx.save(); rrect(-460, -150, 920, 300, 44); ctx.clip();
+  ctx.fillStyle = C.blue; ctx.fillRect(-460, -150, 920, 26); ctx.fillRect(-460, 124, 920, 26);
+  ctx.restore();
+  ctx.restore();
+  text('Sábado 28 de noviembre', 540, iy - 62, 72, { fill: C.red, stroke: C.ink, sw: 0, shadow: false, rot: -.015, maxW: 860 });
+  text('¡Calientitas y recién hechas!', 540, iy + 18, 54, { fill: C.ink, sw: 0, shadow: false, rot: -.015, weight: 600, maxW: 860 });
+  text('con curtido y salsa', 540, iy + 78, 54, { fill: C.blue, sw: 0, shadow: false, rot: -.015, weight: 600, maxW: 860 });
+
+  // cinta final
+  const rk = seg(t, 16.7, 17.1);
+  ribbon(540, 1760, 640, 120, C.red, '¡Haz tu pedido!', 76, eBack(rk) * hitP * beatPulse(t, .025), .02 + Math.sin(t * 3) * .015);
+
+  // golpe final
+  confetti(t, 18.0, 540, 900, 140, 11, 1.2);
+  burstLines(t, 18.0, 540, 1010, 360, C.white);
+  // destellos
+  if (t > 16.5) {
+    const R = rng(77);
+    for (let i = 0; i < 8; i++) {
+      const x = 80 + R() * 920, y = 150 + R() * 1600, ph = (t * 1.3 + R()) % 1, s = Math.sin(ph * Math.PI) * (16 + R() * 18);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(t);
+      ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.beginPath();
+      for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, rr = k % 2 ? s * .3 : s; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+      ctx.fill(); ctx.restore();
+    }
+  }
+}
+
+// ---------- transición en diagonal ----------
+function swipe(t, t0, drawA, drawB, col) {
+  const k = eInOut(seg(t, t0, t0 + .5));
+  if (k <= 0) return drawA(t);
+  if (k >= 1) return drawB(t);
+  drawA(t);
+  const x = lerp(-900, 1980, k);
+  const poly = (off, w) => { ctx.beginPath(); ctx.moveTo(x + off - 600, -100); ctx.lineTo(x + off - 600 - w, -100); ctx.lineTo(x + off - w + 600, H + 100); ctx.lineTo(x + off + 600, H + 100); ctx.closePath(); };
+  // B se revela detrás de la franja
+  ctx.save(); poly(0, 4000); ctx.clip(); drawB(t); ctx.restore();
+  // franjas de color
+  ctx.fillStyle = col; poly(120, 120); ctx.fill();
+  ctx.fillStyle = C.white; poly(170, 50); ctx.fill();
+}
+
+// ---------- render principal ----------
+function render(t) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  // temblor de cámara en los golpes
+  for (const [t0, a] of [[9.0, 22], [16.0, 12], [18.0, 18], [2.75, 10], [12.5, 10]]) {
+    const d = t - t0;
+    if (d > 0 && d < .35) { const s = a * (1 - d / .35); ctx.translate(Math.sin(d * 90) * s, Math.cos(d * 70) * s); }
+  }
+  const zb = 1.02 + .012 * Math.sin(t * .9);
+  ctx.translate(540 + Math.sin(t * .55) * 8, 960 + Math.cos(t * .7) * 6); ctx.scale(zb, zb); ctx.translate(-540, -960);
+  if (t < 14) swipe(t, 10.85, scene1, scene2, C.yellow);
+  else swipe(t, 14.85, scene2, scene3, C.red);
+  ctx.restore();
+  // fundido final
+  const f = seg(t, 19.55, 20);
+  if (f > 0) { ctx.fillStyle = `rgba(20,8,0,${f})`; ctx.fillRect(0, 0, W, H); }
+}
+window.render = render;
+// Desenfoque de movimiento: promedia n sub-fotogramas dentro del obturador (en segundos)
+const acc = document.createElement('canvas'); acc.width = W; acc.height = H;
+const actx = acc.getContext('2d');
+window.renderBlur = (t, n, shutter) => {
+  actx.globalAlpha = 1; actx.clearRect(0, 0, W, H);
+  for (let k = 0; k < n; k++) {
+    const tt = Math.max(0, Math.min(DURATION - 1e-3, t + (n > 1 ? (k / (n - 1) - .5) * shutter : 0)));
+    render(tt);
+    actx.globalAlpha = 1 / (k + 1); actx.drawImage(cv, 0, 0);
+  }
+  actx.globalAlpha = 1;
+  return acc;
+};
+
+// vista previa en bucle si se abre en el navegador
+if (!navigator.webdriver) {
+  document.fonts.ready.then(() => {
+    const start = performance.now();
+    (function loop() { render(((performance.now() - start) / 1000) % DURATION); requestAnimationFrame(loop); })();
+  });
+}
+</script>
+</body>
+</html>
