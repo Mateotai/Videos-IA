@@ -151,7 +151,7 @@ function cookie(x, y, r, part = 'full', bite = 0, rot = 0) {
 // ---------- gatito ----------
 // (x,y) = punto entre las patas en el suelo.  expr: normal | love | shock | sad | dizzy | happy | determined | chew
 function drawCatRaw(st, t) {
-  const { x, y, dir = 1, sx = 1, sy = 1, rot = 0, expr = 'normal', look = 0, paw = 0, walk = 0, chew = 0, tearsOn = 0 } = st;
+  const { x, y, dir = 1, sx = 1, sy = 1, rot = 0, expr = 'normal', look = 0, lookX = 0, paw = 0, walk = 0, chew = 0, tearsOn = 0 } = st;
   const SEC = secAt('cat', t), fd = Math.sign(dir) || 1;
   ctx.save();
   ctx.translate(x, y); ctx.rotate(rot + SEC.lean); ctx.scale(dir * sx * (1 - SEC.sq * .6), sy * (1 + SEC.sq));
@@ -209,9 +209,18 @@ function drawCatRaw(st, t) {
 
   // ojos
   const eyes = [[hx - 22, hy - 6], [hx + 34, hy - 6]];
-  const ly = look * -8; // mirar hacia arriba
+  const ly = look * -8, lx = lookX * 8; // mirar arriba / a los lados
   for (const [ex, ey] of eyes) {
-    if (expr === 'love') {
+    if (expr === 'wide') {          // ojos enormes y brillantes (codicia)
+      ellipse(ex, ey, 24, 28, C.white, true, 6);
+      ellipse(ex + lx * 1.1, ey + ly + 2, 15, 18, C.ink, false);
+      ellipse(ex + lx * 1.1 - 5, ey + ly - 6, 6, 7, C.white, false);
+      ellipse(ex + lx * 1.1 + 6, ey + ly + 9, 3, 3, C.white, false);
+    } else if (expr === 'glare') {  // mirada asesina: párpado plano
+      ellipse(ex + lx, ey + ly + 4, 12, 13, C.ink, false);
+      ctx.fillStyle = C.cat; ctx.fillRect(ex - 20, ey - 26, 40, 22);
+      ctx.beginPath(); ctx.moveTo(ex - 17, ey - 4); ctx.lineTo(ex + 17, ey - 4); ctx.lineWidth = 7; ctx.strokeStyle = C.ink; ctx.stroke();
+    } else if (expr === 'love') {
       heart(ex, ey + 4, 1.05 + Math.sin(t * 12) * .1);
     } else if (expr === 'happy' || expr === 'chew') {
       ctx.beginPath(); ctx.arc(ex, ey + 6, 14, Math.PI * 1.1, Math.PI * 1.9); ctx.lineWidth = 8; ctx.strokeStyle = C.ink; ctx.stroke();
@@ -221,7 +230,7 @@ function drawCatRaw(st, t) {
       ctx.lineWidth = 5; ctx.strokeStyle = C.ink; ctx.stroke(); ctx.restore();
     } else if (expr === 'shock') {
       ellipse(ex, ey, 22, 26, C.white, true, 6);
-      ellipse(ex + 2, ey + ly, 7, 8, C.ink, false);
+      ellipse(ex + 2 + lx, ey + ly, 7, 8, C.ink, false);
     } else if (expr === 'sad') {
       ellipse(ex, ey + 2, 15, 19, C.ink, false);
       ellipse(ex - 4, ey - 5, 6, 7, C.white, false);
@@ -232,13 +241,13 @@ function drawCatRaw(st, t) {
       const bl = blinkAmt(t, 3);   // parpadeo progresivo
       if (bl > .82) { ctx.beginPath(); ctx.moveTo(ex - 13, ey + 2); ctx.quadraticCurveTo(ex, ey + 8, ex + 13, ey + 2); ctx.lineWidth = 7; ctx.strokeStyle = C.ink; ctx.stroke(); }
       else {
-        ellipse(ex, ey + ly + bl * 6, 13, 18 * (1 - bl), C.ink, false);
-        if (bl < .5) ellipse(ex - 4, ey - 7 + ly + bl * 6, 5, 6 * (1 - bl), C.white, false);
+        ellipse(ex + lx, ey + ly + bl * 6, 13, 18 * (1 - bl), C.ink, false);
+        if (bl < .5) ellipse(ex - 4 + lx, ey - 7 + ly + bl * 6, 5, 6 * (1 - bl), C.white, false);
       }
     }
   }
   // cejas
-  if (expr === 'determined') {
+  if (expr === 'determined' || expr === 'glare') {
     ctx.lineWidth = 8; ctx.strokeStyle = C.ink;
     ctx.beginPath(); ctx.moveTo(hx - 40, hy - 34); ctx.lineTo(hx - 8, hy - 24); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(hx + 52, hy - 34); ctx.lineTo(hx + 20, hy - 24); ctx.stroke();
@@ -262,6 +271,11 @@ function drawCatRaw(st, t) {
   } else if (expr === 'chew') {
     const o = (Math.sin(t * 22) + 1) / 2;
     ellipse(hx + 11, my + 6, 12, 4 + o * 9, '#7a2440', true, 5);
+  } else if (expr === 'wide') {    // boquita abierta y babita
+    ellipse(hx + 11, my + 6, 9, 8, '#7a2440', true, 5);
+    ctx.save(); ctx.globalAlpha = .85; ellipse(hx + 24, my + 16 + Math.sin(t * 3) * 2, 4, 7, '#bfe9ff', true, 3); ctx.restore();
+  } else if (expr === 'glare') {
+    ctx.beginPath(); ctx.moveTo(hx - 2, my + 6); ctx.lineTo(hx + 24, my + 6); ctx.stroke();
   } else if (expr === 'love' || expr === 'happy') {
     ctx.beginPath(); ctx.arc(hx + 11, my - 2, 16, Math.PI * .1, Math.PI * .9); ctx.fillStyle = '#7a2440'; ctx.fill(); ctx.stroke();
   } else {
@@ -291,9 +305,9 @@ function drawCatRaw(st, t) {
 
 // ---------- ratoncito ----------
 function drawMouseRaw(st, t) {
-  const { x, y, dir = -1, sx = 1, sy = 1, expr = 'normal', look = 0, chew = 0, holding = null } = st;
+  const { x, y, dir = -1, sx = 1, sy = 1, rot = 0, expr = 'normal', look = 0, chew = 0, holding = null } = st;
   const SEC = secAt('mouse', t), fd = Math.sign(dir) || 1;
-  ctx.save(); ctx.translate(x, y); ctx.rotate(SEC.lean); ctx.scale(dir * sx * (1 - SEC.sq * .6), sy * (1 + SEC.sq));
+  ctx.save(); ctx.translate(x, y); ctx.rotate(SEC.lean + rot); ctx.scale(dir * sx * (1 - SEC.sq * .6), sy * (1 + SEC.sq));
   ctx.save(); ctx.globalAlpha = .18; ellipse(0, 3, 50, 9, '#000', false); ctx.restore();
   // cola
   ctx.beginPath(); ctx.moveTo(-40, -18); ctx.bezierCurveTo(-90, -10 + SEC.tail * 20, -80, -70 + SEC.tail * 30, -120, -50 + Math.sin(t * 6) * 8 + SEC.tail * 45);
@@ -315,6 +329,15 @@ function drawMouseRaw(st, t) {
   // ojo
   if (expr === 'happy' || expr === 'chew') {
     ctx.beginPath(); ctx.arc(54, -64, 8, Math.PI * 1.1, Math.PI * 1.9); ctx.lineWidth = 5; ctx.strokeStyle = C.ink; ctx.stroke();
+  } else if (expr === 'smug') {      // ojo entornado de listillo
+    ellipse(56, -64, 7, 7, C.ink, false); ellipse(54, -66, 2.5, 2.5, C.white, false);
+    ctx.fillStyle = C.mouse; ctx.fillRect(46, -78, 20, 12);
+    ctx.beginPath(); ctx.moveTo(46, -66); ctx.lineTo(66, -67); ctx.lineWidth = 5; ctx.strokeStyle = C.ink; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(44, -86); ctx.quadraticCurveTo(55, -94, 66, -86); ctx.lineWidth = 4; ctx.stroke();
+  } else if (expr === 'dizzy') {
+    ctx.save(); ctx.translate(56, -66); ctx.rotate(t * 9);
+    ctx.beginPath(); for (let a = 0; a < 10; a += .3) ctx.lineTo(Math.cos(a) * a * .9, Math.sin(a) * a * .9);
+    ctx.lineWidth = 3.5; ctx.strokeStyle = C.ink; ctx.stroke(); ctx.restore();
   } else if (expr === 'shock') {
     ellipse(54, -66, 12, 14, C.white, true, 4); ellipse(56, -68 - look * 4, 4, 5, C.ink, false);
   } else {
@@ -330,6 +353,7 @@ function drawMouseRaw(st, t) {
   // boca
   if (expr === 'chew') { const o = (Math.sin(t * 24 + 1) + 1) / 2; ellipse(68, -44, 6, 2 + o * 5, '#7a2440', true, 3); }
   else if (expr === 'shock') ellipse(70, -44, 6, 8, '#7a2440', true, 3);
+  else if (expr === 'smug' || expr === 'guilty') { ctx.beginPath(); ctx.moveTo(60, -46); ctx.quadraticCurveTo(70, -38, 80, -48); ctx.lineWidth = 4; ctx.strokeStyle = C.ink; ctx.stroke(); }
   ctx.save(); ctx.globalAlpha = .5; ellipse(44, -50, 9, 5, C.pink, false); ctx.restore();
   ctx.restore();   // cabeza
   // lo que sostiene

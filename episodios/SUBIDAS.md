@@ -133,6 +133,24 @@ Generarlo: `python3 audio/musica_ep9_2d.py && node render.js --page ep9_2d.html 
 
 ---
 
+## Ep. 9 (versión alternativa) · 2D kawaii · "Gone fishing" 🎣 — `salida/ep9_gone_fishing.mp4`
+20 s, 9:16, bucle perfecto (el último fotograma = el primero). Sin diálogos; único texto: "BONK!".
+**Título:** `Pip went fishing… for MOCHI 🎣🍪 #shorts`
+**Descripción:**
+```
+Pip dangles a cookie on a fishing rod... Mochi tries EVERYTHING to get it! 🎣🍪🐱🐭
+Watch until the end! 👀 (it loops 😹)
+
+New Mochi & Pip cartoon every week ❤️
+
+#shorts #cartoon #animation #cat #kids #funny #cookie
+```
+**Títulos traducidos:** ES `Pip salió a pescar… a MOCHI 🎣🍪 #shorts` · PT `Pip foi pescar… o MOCHI 🎣🍪 #shorts` · FR `Pip est allé pêcher… MOCHI 🎣🍪 #shorts` · HI `पिप ने मोची को पकड़ने के लिए मछली पकड़ी 🎣🍪 #shorts` · ID `Pip memancing… MOCHI 🎣🍪 #shorts`
+
+Generarlo: `python3 audio/musica_ep9_fishing.py && node render.js --page ep9_fishing.html --out ep9_gone_fishing.mp4 --audio salida/musica_ep9_fishing.wav`
+
+---
+
 ## Ep. 10 · 3D · "Popcorn" 🍿 — `salida/ep10_popcorn.mp4` (36 s)
 Gancho: Mochi sentado en la olla… ¡BOOM! y sale volando a cámara lenta; rebobina estilo VHS (◀◀) y cuenta la historia.
 **Título:** `Mochi put the WHOLE bag in the pot 🍿💥 #shorts`
@@ -217,3 +235,4 @@ Generarlo: `python3 audio/musica_ep12.py && node render.js --page ep12.html --ou
 | 12 | 3D | | | | | |
 
 Cuando tengas los números, pásamelos y te digo qué estilo gana y cómo seguir.
+
