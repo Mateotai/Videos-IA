@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mochi & Pip — Ep. 2 Burbujas</title>
+<style>
+  @font-face { font-family: 'Fredoka'; font-weight: 700; src: url('fonts/fredoka-latin-700-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Fredoka'; font-weight: 600; src: url('fonts/fredoka-latin-600-normal.woff2') format('woff2'); }
+  html, body { margin: 0; background: #111; overflow: hidden; }
+  #out { display: block; width: 1080px; height: 1920px; }
+  body.preview #out { width: auto; height: 100vh; margin: 0 auto; }
+</style>
+</head>
+<body>
+<canvas id="out" width="1080" height="1920"></canvas>
+<script src="engine.js"></script>
+<script>
+// =====================================================================
+//  EPISODIO 2 — "Burbujas" (jardín)
+//  Pip sopla pompas; Mochi las caza (x3), falla la dorada y se da de bruces.
+//  Pip, travieso, le encierra en una pompa gigante que sale volando; Mochi
+//  se asusta, Pip salta y la explota, Mochi cae y Pip aterriza en su cabeza.
+//  Final: vuelve la pompa dorada y explota en la nariz de Pip (guiño al inicio).
+// =====================================================================
+const DURATION = 25;
+const FLOOR = 1480;
+
+
+const C = new Rig({ ...BASE, x: 360, y: FLOOR });
+const M = new Rig({ ...BASE, x: 800, y: FLOOR, turn: -.6, lookX: -1, wandA: -12 });
+const GB = new Rig({ x: 0, y: 0, r: 0 });
+const k = (r, t, v, e) => r.key(t, v, e);
+
+// ---------------- PIP ----------------
+const BLOW = { aR: -112, bR: .5, aL: -15, bL: .3, wandA: -12, mouthO: .22, smile: -.3, lid: .3, rR: 1 };
+k(M, 0, { ...NEUT, x: 800, y: FLOOR, turn: -.6, lookX: -1, lookY: -.1, hLift: 0, hTilt: 0, sx: 1, sy: 1, lean: 0, sway: 0, chew: 0, blush: .5, walk: 0, walkLift: 0, tailWag: .6, aL: -15, bL: .3, rL: 1, cross: 0, ...BLOW, puff: .3 });
+for (let t = .35; t < 8.5; t += .35) k(M, t, { puff: (Math.round(t / .35) % 2) ? .85 : .35 });
+// se ríe del tortazo
+k(M, 8.6, { ...BLOW, puff: .35, happy: 0 });
+k(M, 8.98, { aR: -40, bR: .3, aL: -118, bL: .4, wandA: 20, happy: 1, mouthO: .45, smile: 1, lid: .05, puff: 0, sway: .05 }, 'back');
+k(M, 10.2, { aR: -40, aL: -118, happy: 1, mouthO: .45, sway: .05, lid: .05, smile: 1, browA: 0 });
+// idea traviesa
+k(M, 10.45, { happy: 0, aL: -15, bL: .3, mouthO: 0, smile: .9, lid: .38, browA: -.45, sway: 0 });
+k(M, 10.8, { happy: 0, aL: -15, mouthO: 0, smile: .9, lid: .38, browA: -.45 });
+// sopla la pompa gigante
+k(M, 11.05, { ...BLOW, puff: .95, lid: .85, browA: .3, hTilt: -.08 });
+k(M, 13.15, { ...BLOW, puff: .95, lid: .85, browA: .3, hTilt: -.08 });
+// aplaude y se ríe
+k(M, 13.32, { puff: 0, mouthO: .5, smile: 1, happy: 1, lid: .05, browA: 0, hTilt: 0, aR: 30, aL: 30, bR: .8, bL: .8, wandA: -40 });
+for (let i = 0; i < 4; i++) { k(M, 13.45 + i * .16, { aR: 55, aL: 55 }, 'o'); k(M, 13.53 + i * .16, { aR: 28, aL: 28 }, 'i'); }
+k(M, 14.3, { aR: 28, aL: 28, hLift: 0, lookY: -.1 });
+k(M, 14.55, { aR: 150, bR: 0, wandA: -70, aL: -50, bL: .9, hLift: .35, lookY: -1, lookX: -.6 });
+k(M, 16.45, { happy: 1, mouthO: .5, eyeS: 1, pupS: 1, browA: 0, browY: 0, aR: 150, aL: -50 });
+// se da cuenta del peligro
+k(M, 16.62, { happy: 0, eyeS: 1.4, pupS: .5, mouthO: .9, smile: -.2, browA: .7, browY: -1, aR: 120, aL: 120, bR: 0, bL: 0 }, 'back');
+// corre debajo y salta (no llega)
+k(M, 16.85, { x: 800, walk: 0, walkLift: 0, turn: -.6, lean: 0 });
+k(M, 16.95, { walk: 3.6, walkLift: 1, turn: -1, lean: -.12 });
+k(M, 17.25, { x: 600 }, 'io'); k(M, 17.2, { walk: 3.6, walkLift: 1 }); k(M, 17.3, { walk: 0, walkLift: 0, lean: 0 });
+k(M, 17.3, { y: FLOOR, aR: 120, aL: 120, wandA: -40 }); k(M, 17.45, { y: FLOOR - 90 }, 'oq'); k(M, 17.6, { y: FLOOR }, 'iq');
+k(M, 17.38, { aR: 168, aL: 160, wandA: -85 });
+k(M, 17.7, { y: FLOOR }); k(M, 17.85, { y: FLOOR - 100 }, 'oq'); k(M, 18.0, { y: FLOOR }, 'iq');
+k(M, 17.95, { aR: 168, aL: 160 });
+// vuelve atrás para coger carrerilla
+k(M, 18.02, { turn: -1, x: 600, walk: 0, walkLift: 0 }); k(M, 18.08, { turn: 1, walk: 3.8, walkLift: 1, lean: .12 });
+k(M, 18.3, { x: 820 }, 'io'); k(M, 18.26, { walk: 3.8, walkLift: 1 }); k(M, 18.34, { walk: 0, walkLift: 0, lean: 0, turn: 1 }); k(M, 18.38, { turn: -.8 });
+k(M, 18.34, { sy: 1, sx: 1, aR: 168, aL: 160, browA: .7 }); k(M, 18.45, { sy: .7, sx: 1.15, aR: -60, aL: 55, browA: -1, eyeS: 1, pupS: 1, mouthO: 0, smile: -.1, browY: 0 });
+k(M, 18.48, { x: 820, y: FLOOR });
+k(M, 18.55, { sy: 1.12, sx: .92, aR: 140, aL: 150, wandA: -40, bR: 0 }, 'o');
+k(M, 19.3, { y: 1080 }, 'oq'); k(M, 19.3, { x: 700 }, 'io');
+k(M, 19.0, { sy: 1, sx: 1 });
+// ¡pop! y cae sobre la cabeza de Mochi
+k(M, 19.32, { eyeS: 1, pupS: 1, mouthO: 0, browA: -1 }); k(M, 19.42, { eyeS: 1.35, pupS: .55, mouthO: .9, browA: .6, browY: -1, aR: 165, aL: 165 }, 'back');
+k(M, 19.95, { y: 1218 }, 'iq'); k(M, 19.95, { x: 478 }, 'io');
+k(M, 19.9, { turn: -.8 }); k(M, 20.05, { turn: -.25, sy: .88, sx: 1.08, aR: 80, aL: 80, bR: .3, bL: .3 });
+// se ríen
+k(M, 20.1, { eyeS: 1.35, pupS: .55, mouthO: .9, browA: .6, browY: -1, happy: 0, smile: -.2 });
+k(M, 20.25, { happy: 1, mouthO: .5, smile: 1, eyeS: 1, pupS: 1, browA: 0, browY: 0, sway: .05, wandA: -30 }, 'back');
+// la pompa dorada vuelve...
+k(M, 21.5, { happy: 1, mouthO: .5, smile: 1, sway: .05, lookX: -1, lookY: 0, hLift: 0, cross: 0 });
+k(M, 21.75, { happy: 0, mouthO: .12, smile: .4, sway: 0, lookX: .7, lookY: -1, hLift: .35 });
+k(M, 22.5, { lookX: .7, lookY: -1, hLift: .35, cross: 0 }); k(M, 23.0, { lookX: .1, lookY: .3, hLift: -.05, cross: 1 });
+k(M, 23.15, { lid: .05, cross: 1, mouthO: .12 }); k(M, 23.2, { lid: 1, cross: 0 }, 'o'); k(M, 23.38, { lid: .05 });
+k(M, 23.38, { happy: 0, mouthO: .12 }); k(M, 23.5, { happy: 1, mouthO: .55, smile: 1, sway: .05, lookY: 0, lookX: 0, hLift: 0 }, 'back');
+M.done();
+const SIM_M = simulate(M);
+
+// aro de la varita de pompas
+function ringAt(t) {
+  const g = geom(M, SIM_M, t, MS), h = hands(g, MOUSE_RIG).R, a = g.P.wandA * Math.PI / 180;
+  return { x: h.x + g.face * Math.cos(a) * 58, y: h.y + Math.sin(a) * 58, hand: h, face: g.face };
+}
+const RING = ringAt(12.0);
+const G0 = { x: RING.x - .86 * 240, y: RING.y - .5 * 240 };
+const DY = FLOOR - G0.y;   // pies de Mochi respecto al centro de la pompa
+
+// ---------------- POMPA GIGANTE ----------------
+k(GB, 11.0, { r: 0 }); k(GB, 13.2, { r: 240 }, 'io'); k(GB, 19.3, { r: 240 }); k(GB, 19.31, { r: 0 }, 'hold');
+const GPATH = [[13.2, 0, 0], [14.0, 0, 0], [15.0, -15, -113], [16.0, -30, -223], [17.0, -45, -293], [18.0, -53, -323], [19.3, -59, -333]];
+for (const [t, dx, dy] of GPATH) k(GB, t, { x: G0.x + dx, y: G0.y + dy });
+GB.done();
+
+// ---------------- MOCHI ----------------
+const PLANT_X = G0.x;
+k(C, 0, { ...NEUT, x: 360, y: FLOOR, turn: .45, lookX: .7, lookY: -.1, hLift: .05, aR: -12, aL: -12, bR: .3, bL: .3, rR: 1, rL: 1, sx: 1, sy: 1, lean: 0, sway: 0, walk: 0, walkLift: 0, tailWag: .4, blush: .5, cross: 0, hTilt: 0, chew: 0 });
+// la pompa se acerca a su nariz: bizco
+k(C, .25, { cross: 0, lookX: .7, lookY: -.1, mouthO: 0, smile: .5 });
+k(C, 1.35, { cross: 1, lookX: 0, lookY: .35, hLift: -.05, mouthO: .14, smile: .1 });
+// ¡pop en la nariz!
+k(C, 1.6, { lid: .05, cross: 1, eyeS: 1, pupS: 1, mouthO: .14, browY: 0 }); k(C, 1.63, { lid: 1, cross: 0 }, 'o');
+k(C, 1.76, { lid: 0, eyeS: 1.3, pupS: .6, mouthO: .5, smile: -.1, browY: -1, browA: .4, lookY: 0 }, 'back');
+k(C, 1.62, { y: FLOOR }); k(C, 1.72, { y: FLOOR - 28 }, 'oq'); k(C, 1.84, { y: FLOOR }, 'iq');
+// ¡más pompas! modo cazador
+k(C, 2.05, { eyeS: 1.3, pupS: .6, mouthO: .5, browY: -1, browA: .4, smile: -.1, turn: .45, lookX: 0, lookY: 0 });
+k(C, 2.3, { eyeS: 1.15, pupS: 1.25, mouthO: .25, smile: .8, browY: 0, browA: 0, turn: .5, lookX: 1, lookY: -.35, tailWag: 1 });
+k(C, 2.6, { sy: 1, sx: 1, lean: 0, sway: 0, lid: .05, aR: -12, aL: -12 });
+k(C, 2.85, { sy: .82, sx: 1.08, lean: .08, sway: .07, lid: .2, browA: -.3, aR: -25, aL: 30, mouthO: .1 });
+// salto 1 (pop 4.9)
+k(C, 4.4, { sy: .82, sx: 1.08, sway: .07, lean: .08, aR: -25, aL: 30 }); k(C, 4.57, { sy: .72, sx: 1.16, sway: 0, lean: 0 });
+k(C, 4.6, { x: 360, y: FLOOR }); k(C, 4.66, { sy: 1.1, sx: .93, aR: 168, aL: 162, bR: -.1, bL: -.1 }, 'o');
+k(C, 4.9, { y: FLOOR - 230 }, 'oq'); k(C, 4.9, { x: 395 }, 'lin'); k(C, 5.2, { y: FLOOR }, 'iq'); k(C, 5.2, { x: 420 }, 'lin');
+k(C, 4.88, { happy: 0, smile: .8, mouthO: .1, lookY: -.35 }); k(C, 4.98, { happy: 1, smile: 1, mouthO: .5, lookY: -.6 }, 'back');
+k(C, 5.0, { sy: 1, sx: 1 }); k(C, 5.3, { aR: -25, aL: 30, happy: 1 }); k(C, 5.45, { happy: 0, mouthO: .2, sy: .9 });
+// salto 2 (pop 6.2)
+k(C, 5.5, { turn: .5, lookX: 1 }); k(C, 5.62, { turn: -.6, lookX: 1, lookY: -.4 });
+k(C, 5.72, { sy: .9, sx: 1.04 }); k(C, 5.87, { sy: .72, sx: 1.16, aR: -60, aL: 50 });
+k(C, 5.9, { x: 420, y: FLOOR }); k(C, 5.96, { sy: 1.1, sx: .93, aR: 168, aL: 162 }, 'o');
+k(C, 6.2, { y: FLOOR - 240 }, 'oq'); k(C, 6.2, { x: 385 }, 'lin'); k(C, 6.5, { y: FLOOR }, 'iq'); k(C, 6.5, { x: 345 }, 'lin');
+k(C, 6.18, { happy: 0, mouthO: .2 }); k(C, 6.28, { happy: 1, mouthO: .5, smile: 1 }, 'back');
+k(C, 6.3, { sy: 1, sx: 1 }); k(C, 6.6, { aR: -25, aL: 30, happy: 1 }); k(C, 6.75, { happy: 0, mouthO: .2 });
+// salto 3 (pop 7.5)
+k(C, 6.8, { turn: -.6 }); k(C, 6.92, { turn: .5 });
+k(C, 7.02, { sy: .9, sx: 1.04 }); k(C, 7.17, { sy: .72, sx: 1.16, aR: -60, aL: 50 });
+k(C, 7.2, { x: 345, y: FLOOR }); k(C, 7.26, { sy: 1.1, sx: .93, aR: 168, aL: 162 }, 'o');
+k(C, 7.5, { y: FLOOR - 250 }, 'oq'); k(C, 7.5, { x: 380 }, 'lin'); k(C, 7.8, { y: FLOOR }, 'iq'); k(C, 7.8, { x: 410 }, 'lin');
+k(C, 7.48, { happy: 0, mouthO: .2 }); k(C, 7.58, { happy: 1, mouthO: .5, smile: 1 }, 'back');
+k(C, 7.6, { sy: 1, sx: 1 }); k(C, 7.88, { aR: -25, aL: 30 }); k(C, 7.92, { happy: 0, mouthO: .2, browA: -.6 });
+// salto 4: la dorada se escapa... ¡al suelo!
+k(C, 7.95, { sy: .9, sx: 1.04 }); k(C, 8.17, { sy: .68, sx: 1.18, aR: -70, aL: 55 });
+k(C, 8.2, { x: 410, y: FLOOR, lean: 0 }); k(C, 8.27, { sy: 1.12, sx: .92, aR: 172, aL: 165, rR: 1.25, rL: 1.2 }, 'o');
+k(C, 8.55, { y: FLOOR - 330 }, 'oq'); k(C, 8.55, { x: 470 }, 'lin');
+k(C, 8.45, { eyeS: 1, pupS: 1.25, mouthO: .2, browA: -.6 }); k(C, 8.56, { eyeS: 1.32, pupS: .55, mouthO: .6, browA: .7, browY: -1, smile: -.2 }, 'back');
+k(C, 8.6, { lean: 0, sy: 1, sx: 1 }); k(C, 8.9, { y: FLOOR, lean: .85 }, 'iq'); k(C, 8.9, { x: 450 }, 'lin');
+k(C, 8.75, { aR: 95, aL: 90, rR: 1, rL: 1 });
+k(C, 9.15, { x: 470 }, 'o'); k(C, 10.0, { x: 470, walk: 0, walkLift: 0 }); k(C, 10.12, { walk: 2.4, walkLift: .5 }); k(C, 10.5, { x: PLANT_X }, 'io'); k(C, 10.45, { walk: 2.4, walkLift: .5 }); k(C, 10.6, { walk: 0, walkLift: 0 });
+k(C, 8.92, { lid: .9, eyeS: 1, pupS: 1, mouthO: .3, smile: -.5, browA: .4, browY: 0 }, 'hold');
+// se levanta enfurruñado
+k(C, 9.6, { lean: .85, sy: 1 }); k(C, 10.0, { lean: 0 }, 'back');
+k(C, 9.7, { lid: .9, aR: 95, aL: 90 }); k(C, 9.95, { lid: .3, browA: -1, puff: .7, smile: -.6, mouthO: 0, aR: -15, aL: -15, eyeS: 1 });
+for (let i = 0; i < 4; i++) k(C, 10.05 + i * .09, { hTilt: i % 2 ? -.22 : .22 });
+k(C, 10.45, { hTilt: 0 });
+k(C, 10.55, { turn: .15, aR: -62, aL: -62, bR: .6, bL: .6, lookX: -.9, lookY: 0, hLift: .12, sy: .97, tailWag: .25, puff: .5 });
+k(C, 13.15, { turn: .15, aR: -62, aL: -62, lookX: -.9, lookY: 0, hLift: .12, sy: .97, puff: .5, browA: -1, lid: .3, smile: -.6, eyeS: 1 });
+// ...¿eh? ¡está dentro de una pompa!
+k(C, 13.32, { puff: 0, browA: .3, lid: 0, eyeS: 1.25, mouthO: .3, smile: .2, lookX: 1, aR: 30, aL: 30, bR: .3, bL: .3 }, 'back');
+k(C, 13.6, { lookX: 1, lookY: 0 }); k(C, 13.85, { lookX: 0, lookY: -1, hLift: .3 });
+// flota (sigue a la pompa)
+for (const [t, dx, dy] of GPATH) if (t >= 14.0) k(C, t, { x: G0.x + dx, y: G0.y + dy + DY });
+k(C, 13.2, { x: PLANT_X, y: FLOOR });
+k(C, 14.0, { turn: .3, sy: 1, sx: 1, hLift: .3 });
+k(C, 14.35, { happy: 1, smile: 1, mouthO: .45, blush: 1, eyeS: 1, browA: 0, hLift: 0, lookY: 0, walk: 2, walkLift: .6, tailWag: 1 });
+for (let i = 0; i < 7; i++) k(C, 14.4 + i * .3, { aR: i % 2 ? 60 : 125, aL: i % 2 ? 125 : 60, bR: .2, bL: .2 });
+// mira abajo: ¡qué alto!
+k(C, 16.45, { happy: 1, lookY: 0, hLift: 0, walk: 2, walkLift: .6, eyeS: 1, mouthO: .45, smile: 1 });
+k(C, 16.6, { happy: 0, lookY: .9, hLift: -.2, eyeS: 1.05 });
+k(C, 16.8, { eyeS: 1.25, pupS: .75, browA: 1, mouthO: .3, smile: -.8, earDroop: .6, sad: .5, tears: .25, aR: 120, aL: 115, bR: .2, bL: .2, walk: 0, walkLift: 0, tailWag: .1 });
+k(C, 19.28, { eyeS: 1.25, pupS: .75, browA: 1, mouthO: .3, smile: -.8, earDroop: .6, sad: .5, tears: .25, aR: 120, aL: 115, lookY: .9, hLift: -.2 });
+// ¡pop! cae
+k(C, 19.38, { eyeS: 1.42, pupS: .5, mouthO: 1, smile: -.3, browY: -1.2, browA: .7, earDroop: 0, sad: 0, tears: 0, aR: 168, aL: 150, lookY: -.3, hLift: 0 }, 'back');
+k(C, 19.3, { x: G0.x - 59, y: G0.y - 333 + DY }); k(C, 19.75, { y: FLOOR }, 'iq'); k(C, 19.75, { x: 455 }, 'io');
+k(C, 19.75, { sy: 1, sx: 1 }); k(C, 19.95, { sy: 1, sx: 1 }); k(C, 20.02, { sy: .86, sx: 1.08 }, 'o'); k(C, 20.25, { sy: 1, sx: 1 }, 'back');
+k(C, 19.8, { turn: .3 });
+// se ríen juntos
+k(C, 20.05, { eyeS: 1.42, pupS: .5, mouthO: 1, aR: 168, aL: 150, happy: 0 });
+k(C, 20.25, { happy: 1, mouthO: .55, smile: 1, eyeS: 1, pupS: 1, browA: 0, browY: 0, aR: -55, aL: -55, bR: .9, bL: .9, sway: .05, tailWag: 1 }, 'back');
+// la pompa dorada vuelve
+k(C, 21.5, { happy: 1, mouthO: .55, sway: .05, lookX: .7, lookY: -.1, hLift: 0, eyeS: 1 });
+k(C, 21.75, { happy: 0, mouthO: .1, smile: .4, sway: 0, lookX: .6, lookY: -1, hLift: .4, eyeS: 1.1, aR: -12, aL: -12, bR: .3, bL: .3 });
+k(C, 22.6, { lookX: .6, lookY: -1 }); k(C, 23.05, { lookX: .2, lookY: -.95 });
+k(C, 23.15, { lid: .05 }); k(C, 23.2, { lid: 1 }, 'o'); k(C, 23.38, { lid: .05 });
+k(C, 23.38, { happy: 0, mouthO: .1 }); k(C, 23.5, { happy: 1, mouthO: .55, smile: 1, sway: .05, hLift: 0, lookY: 0, eyeS: 1 }, 'back');
+C.done();
+const SIM_C = simulate(C);
+
+function groundAt(x, y, t) { return y < FLOOR - 100 && t > 19.9 && t < 24.9 && Math.abs(x - 478) < 60 ? y + 2 : FLOOR; }
+function catNose(t) {
+  const g = geom(C, SIM_C, t), P = g.P, S = g.S, tr = g.tr;
+  const hx = CAT_RIG.head[0] + tr * 10 + S.hx * g.face, hy = CAT_RIG.head[1] + S.hy * .8 - P.earDroop * 6;
+  const fx = tr * 26, fy = -P.hLift * 16 + P.lookY * 2;
+  return toW(g, hx + fx, hy + 30 + fy * .6 - 12);
+}
+function pipNose(t) {
+  const g = geom(M, SIM_M, t, MS), P = g.P, S = g.S, tr = g.tr;
+  const hx = MOUSE_RIG.head[0] + tr * 8 + S.hx * g.face / MS, hy = MOUSE_RIG.head[1] + S.hy * .8 / MS;
+  const fx = tr * 20, fy = -P.hLift * 14, snX = fx + 30 + tr * 18;
+  return toW(g, hx + snX + 26, hy + 12 + fy * .5);
+}
+
+// =====================================================================
+//  POMPAS
+// =====================================================================
+function bubble(x, y, r, t, seed, a = 1, gold = 0) {
+  if (r < 1 || a <= .01) return;
+  const wx = 1 + Math.sin(t * 5 + seed) * .045, wy = 1 + Math.cos(t * 5.6 + seed) * .045;
+  ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(wx, wy);
+  const g = ctx.createRadialGradient(-r * .3, -r * .3, r * .1, 0, 0, r);
+  g.addColorStop(0, gold ? 'rgba(255,240,170,.12)' : 'rgba(255,255,255,.04)'); g.addColorStop(.72, gold ? 'rgba(255,220,120,.16)' : 'rgba(210,240,255,.1)'); g.addColorStop(1, 'rgba(255,255,255,.42)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+  const cg = ctx.createConicGradient(t * .9 + seed, 0, 0);
+  const cols = gold ? ['rgba(255,210,80,.95)', 'rgba(255,170,60,.9)', 'rgba(255,240,150,.95)', 'rgba(255,190,90,.9)', 'rgba(255,210,80,.95)']
+                    : ['rgba(255,140,200,.75)', 'rgba(255,230,120,.75)', 'rgba(120,230,255,.75)', 'rgba(180,140,255,.75)', 'rgba(255,140,200,.75)'];
+  cols.forEach((c, i) => cg.addColorStop(i / 4, c));
+  ctx.lineWidth = Math.max(2.5, r * .055); ctx.strokeStyle = cg; ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(2.5, r * .08);
+  ctx.beginPath(); ctx.arc(0, 0, r * .72, Math.PI * 1.12, Math.PI * 1.42); ctx.stroke();
+  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(r * .38, r * .4, Math.max(1.5, r * .06), 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function popFx(x, y, r, p, gold = 0) {
+  if (p <= 0 || p >= 1) return;
+  ctx.save();
+  ctx.globalAlpha = (1 - p) * .9; ctx.strokeStyle = gold ? '#ffd36b' : '#bfe9ff'; ctx.lineWidth = 5 * (1 - p) + 1;
+  ctx.setLineDash([r * .25, r * .2]); ctx.beginPath(); ctx.arc(x, y, r * (1 + E.o(p) * .7), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+  for (let i = 0; i < 10; i++) {
+    const a = i / 10 * Math.PI * 2 + r, d = r * (.9 + E.o(p) * 1.1);
+    ctx.globalAlpha = (1 - p);
+    FACE = 1; cel(ell(x + Math.cos(a) * d, y + Math.sin(a) * d + 60 * p * p, 5 + r * .04, 6 + r * .05), '#d9f3ff', '#9fd8f5', '#6fb6dc', 2, -1, -1);
+  }
+  ctx.restore();
+  sparkle(x, y, (1 - p) * (.6 + r / 120), 1 - p);
+}
+function comic(text, x, y, t, t0, t1, size = 90, col = '#ffffff', rot = -.08) {
+  if (t < t0 || t > t1) return;
+  const p = E.back(seg(t, t0, t0 + .18)) * (1 - seg(t, t1 - .15, t1));
+  ctx.save(); ctx.translate(x, y); ctx.scale(p, p); ctx.rotate(rot);
+  ctx.font = `700 ${size}px Fredoka, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.lineWidth = size * .2; ctx.strokeStyle = INK; ctx.strokeText(text, 0, 0); ctx.fillStyle = col; ctx.fillText(text, 0, 0);
+  ctx.restore();
+}
+// trayectorias deterministas
+const CACHE = new Map();
+const memo = (key, fn) => { if (!CACHE.has(key)) CACHE.set(key, fn()); return CACHE.get(key); };
+const wob = (t, s, amp) => ({ x: Math.sin(t * 2.3 + s) * amp, y: Math.cos(t * 1.9 + s * 1.7) * amp * .6 });
+function pathBubble(t, t0, t1, from, to, s, amp = 18) {
+  const p = E.io(seg(t, t0, t1)), w = wob(t, s, amp * Math.sin(Math.PI * seg(t, t0, t1)));
+  return { x: lerp(from.x, to.x, p) + w.x, y: lerp(from.y, to.y, p) + w.y };
+}
+const POPS = [4.9, 6.2, 7.5];
+const popPoint = tp => memo('pp' + tp, () => { const h = hands(geom(C, SIM_C, tp), CAT_RIG).mid; return { x: h.x, y: h.y - 22 }; });
+const ringMemo = t => memo('r' + t.toFixed(3), () => ringAt(t));
+
+function drawBubbles(t) {
+  // corriente de pompas mientras Pip sopla
+  for (let i = 0, ts = .1; ts < 8.4; i++, ts = .1 + i * .21) {
+    const L = 2.2 + rnd(i) * 2.2, age = t - ts;
+    if (age < 0 || age > L + .3) continue;
+    const r0 = ringMemo(ts), R = 16 + rnd(i + 3) * 26;
+    const vx = r0.face * (90 + rnd(i + 7) * 130), vy = -(40 + rnd(i + 11) * 110);
+    const x = r0.x + vx * age + Math.sin(age * 2.6 + i) * 22, y = r0.y + vy * age + Math.cos(age * 2 + i) * 10;
+    if (age < L) bubble(x, y, R * E.o(clamp(age / .3)), t, i);
+    else popFx(x, y, R, (age - L) / .3);
+  }
+  // pompa del principio (le explota en la nariz)
+  if (t < 1.6) {
+    const nose = memo('nose', () => catNose(1.6));
+    const p = pathBubble(t, -.3, 1.6, { x: nose.x + 230, y: nose.y - 70 }, nose, 1, 18);
+    bubble(p.x, p.y, 36, t, 2);
+  } else popFx(memo('nose', () => catNose(1.6)).x, memo('nose', () => catNose(1.6)).y, 36, (t - 1.6) / .35);
+  // tres pompas que caza
+  POPS.forEach((tp, j) => {
+    const to = popPoint(tp), from = ringMemo(tp - 2.1);
+    if (t > tp - 2.1 && t < tp) { const p = pathBubble(t, tp - 2.1, tp, from, to, 5 + j, 26); bubble(p.x, p.y, 40, t, 9 + j); }
+    else popFx(to.x, to.y, 40, (t - tp) / .35);
+  });
+  // la dorada que se escapa
+  if (t > 6.3 && t < 10.4) {
+    const from = ringMemo(6.3), near = memo('gnear', () => { const h = hands(geom(C, SIM_C, 8.5), CAT_RIG).mid; return { x: h.x + 50, y: h.y - 85 }; });
+    const p = t < 8.45 ? pathBubble(t, 6.3, 8.45, from, near, 3, 24) : pathBubble(t, 8.45, 10.4, near, { x: 860, y: 430 }, 3, 30);
+    bubble(p.x, p.y, 44, t, 4, 1, 1);
+  }
+  // pompa gigante
+  const r = GB.val('r', t);
+  if (r > 1) {
+    let x, y;
+    if (t < 13.2) { const rg = ringMemo(12.0); x = rg.x - .86 * r; y = rg.y - .5 * r; }
+    else { x = GB.val('x', t) + Math.sin(t * 1.3) * 6; y = GB.val('y', t); }
+    bubble(x, y, r, t, 7);
+  }
+  if (t >= 19.3) { const p = (t - 19.3) / .45; popFx(G0.x - 59 + 150, G0.y - 333 + 60, 240, p); popFx(G0.x - 59, G0.y - 333, 200, p * 1.2); }
+  // vuelve la dorada (final)
+  if (t > 21.55 && t < 23.15) {
+    const nose = memo('pnose', () => pipNose(23.15));
+    const p = pathBubble(t, 21.55, 23.15, { x: 760, y: 640 }, { x: nose.x, y: nose.y - 26 }, 8, 34);
+    bubble(p.x, p.y, 30, t, 11, 1, 1);
+  } else if (t >= 23.15) { const n = memo('pnose', () => pipNose(23.15)); popFx(n.x, n.y - 26, 30, (t - 23.15) / .35, 1); }
+}
+
+// varita de pompas (en la mano de Pip)
+function drawWand(t, gm) {
+  const g = gm, h = hands(g, MOUSE_RIG).R, a = g.P.wandA * Math.PI / 180;
+  const rx = h.x + g.face * Math.cos(a) * 58, ry = h.y + Math.sin(a) * 58;
+  const bx = h.x - g.face * Math.cos(a) * 22, by = h.y - Math.sin(a) * 22;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(rx - g.face * Math.cos(a) * 14, ry - Math.sin(a) * 14);
+  ctx.lineWidth = 11; ctx.strokeStyle = '#7b3f8f'; ctx.stroke(); ctx.lineWidth = 6; ctx.strokeStyle = '#c779e0'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(rx, ry, 15, 0, Math.PI * 2); ctx.fillStyle = 'rgba(220,245,255,.35)'; ctx.fill();
+  ctx.lineWidth = 9; ctx.strokeStyle = '#7b3f8f'; ctx.stroke(); ctx.lineWidth = 4.5; ctx.strokeStyle = '#ff9be0'; ctx.stroke();
+}
+
+// =====================================================================
+//  ESCENARIO: JARDÍN (capas con paralaje)
+// =====================================================================
+const FAR = { x0: -1000, y0: -1400, w: 3100, h: 3200 }, NEAR = { x0: -1000, y0: 1000, w: 3100, h: 520 };
+const farCanvas = document.createElement('canvas'), nearCanvas = document.createElement('canvas');
+function bake(box, canvas, blurPx, drawFn) {
+  const tmp = document.createElement('canvas'); tmp.width = box.w; tmp.height = box.h;
+  const sv = ctx; ctx = tmp.getContext('2d'); ctx.translate(-box.x0, -box.y0); FACE = 1;
+  drawFn(); ctx = sv;
+  canvas.width = box.w; canvas.height = box.h;
+  const c = canvas.getContext('2d'); c.filter = `blur(${blurPx}px)`; c.drawImage(tmp, 0, 0);
+}
+function cloud(x, y, s) { for (const [dx, dy, r] of [[0, 0, 60], [55, -22, 50], [-55, 8, 44], [105, 10, 40], [-100, 18, 32]]) { ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, r * s, 0, 7); ctx.fill(); } }
+function bakeGarden() {
+  bake(FAR, farCanvas, 2.6, () => {
+    const g = ctx.createLinearGradient(0, -1400, 0, 1300); g.addColorStop(0, '#5fc1ff'); g.addColorStop(.6, '#9fdcff'); g.addColorStop(1, '#e2f6ff');
+    ctx.fillStyle = g; ctx.fillRect(FAR.x0, FAR.y0, FAR.w, FAR.h);
+    const sg = ctx.createRadialGradient(150, 420, 0, 150, 420, 520); sg.addColorStop(0, 'rgba(255,250,210,.95)'); sg.addColorStop(.18, 'rgba(255,240,170,.8)'); sg.addColorStop(1, 'rgba(255,240,170,0)');
+    ctx.fillStyle = sg; ctx.fillRect(-400, -100, 1100, 1100);
+    ctx.fillStyle = '#fff5c4'; ctx.beginPath(); ctx.arc(150, 420, 70, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.95)'; cloud(620, 380, 1.1); cloud(1150, 560, .9); cloud(-150, 640, .8); cloud(380, 760, .6); cloud(900, 160, .8);
+    ctx.fillStyle = '#b5e69a'; ctx.beginPath(); ctx.ellipse(250, 1330, 900, 260, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#9ad884'; ctx.beginPath(); ctx.ellipse(1300, 1350, 900, 280, 0, 0, 7); ctx.fill();
+    for (const [x, y, s] of [[-80, 1080, 1.1], [180, 1120, .8], [880, 1060, 1.2], [1180, 1110, .9], [620, 1150, .7]]) {
+      ctx.fillStyle = '#9b6a45'; ctx.fillRect(x - 14 * s, y, 28 * s, 140 * s);
+      ctx.fillStyle = '#6cc25a'; for (const [dx, dy, r] of [[0, -40, 95], [-60, 10, 70], [60, 10, 75], [0, 30, 80]]) { ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, r * s, 0, 7); ctx.fill(); }
+      ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(x - 30 * s, y - 70 * s, 45 * s, 0, 7); ctx.fill();
+    }
+  });
+  bake(NEAR, nearCanvas, 1.1, () => {
+    const top = 1190, bot = 1476;
+    for (let x = -1000; x < 2100; x += 76) {
+      ctx.beginPath(); ctx.moveTo(x, bot); ctx.lineTo(x, top + 26); ctx.lineTo(x + 23, top); ctx.lineTo(x + 46, top + 26); ctx.lineTo(x + 46, bot); ctx.closePath();
+      ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.fillStyle = 'rgba(180,170,200,.35)'; ctx.fillRect(x + 32, top + 20, 14, bot - top - 20);
+      ctx.lineWidth = 4; ctx.strokeStyle = '#c9c0d8'; ctx.stroke();
+    }
+    for (const y of [1262, 1400]) { ctx.fillStyle = '#f4f0fa'; ctx.fillRect(-1000, y, 3100, 22); ctx.fillStyle = 'rgba(180,170,200,.4)'; ctx.fillRect(-1000, y + 16, 3100, 6); }
+    for (let x = -1000, i = 0; x < 2100; x += 120, i++) {
+      const s = .8 + rnd(i) * .5;
+      ctx.fillStyle = '#5fb84d'; for (const [dx, dy, r] of [[0, 0, 70], [-55, 18, 52], [55, 14, 58]]) { ctx.beginPath(); ctx.arc(x + dx * s, 1440 + dy * s - 30 * s, r * s, 0, 7); ctx.fill(); }
+      ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.arc(x - 20 * s, 1395 - 30 * s, 30 * s, 0, 7); ctx.fill();
+      for (let f = 0; f < 4; f++) {
+        const fx = x + (rnd(i * 7 + f) - .5) * 120 * s, fy = 1400 + (rnd(i * 3 + f) - .5) * 60 - 20 * s;
+        ctx.fillStyle = ['#ff8fb1', '#fff27a', '#ffffff', '#ffb36b'][(i + f) % 4];
+        for (let p = 0; p < 5; p++) { const a = p * Math.PI * 2 / 5; ctx.beginPath(); ctx.arc(fx + Math.cos(a) * 7, fy + Math.sin(a) * 7, 6, 0, 7); ctx.fill(); }
+        ctx.fillStyle = '#ffcf3d'; ctx.beginPath(); ctx.arc(fx, fy, 4.5, 0, 7); ctx.fill();
+      }
+    }
+  });
+}
+function drawGround() {
+  const g = ctx.createLinearGradient(0, FLOOR - 16, 0, FLOOR + 520); g.addColorStop(0, '#93d96c'); g.addColorStop(1, '#6dbb4c');
+  ctx.fillStyle = g; ctx.fillRect(-1000, FLOOR - 16, 3200, 1000);
+  for (let i = 0; i < 6; i++) { ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.07)' : 'rgba(40,110,30,.05)'; ctx.fillRect(-1000, FLOOR + 30 + i * 80, 3200, 40); }
+  const ao = ctx.createLinearGradient(0, FLOOR - 16, 0, FLOOR + 50); ao.addColorStop(0, 'rgba(40,90,30,.28)'); ao.addColorStop(1, 'rgba(40,90,30,0)');
+  ctx.fillStyle = ao; ctx.fillRect(-1000, FLOOR - 16, 3200, 66);
+  ctx.fillStyle = '#7fcb5c';
+  for (let x = -1000, i = 0; x < 2200; x += 15, i++) { const h = 12 + rnd(i) * 18; ctx.beginPath(); ctx.moveTo(x, FLOOR - 10); ctx.lineTo(x + 6, FLOOR - 10 - h); ctx.lineTo(x + 12, FLOOR - 10); ctx.fill(); }
+  for (let i = 0; i < 60; i++) {
+    const x = -600 + rnd(i * 5) * 2100, y = FLOOR + 50 + rnd(i * 9) * 420;
+    ctx.fillStyle = '#5aa83e'; for (const d of [-8, 0, 8]) { ctx.beginPath(); ctx.moveTo(x + d - 4, y); ctx.lineTo(x + d * 1.6, y - 18); ctx.lineTo(x + d + 4, y); ctx.fill(); }
+    if (i % 3 === 0) { ctx.fillStyle = ['#ffffff', '#fff27a', '#ff9fc0'][i % 3 === 0 ? (i / 3) % 3 : 0]; for (let p = 0; p < 5; p++) { const a = p * Math.PI * 2 / 5; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 6, y - 20 + Math.sin(a) * 6, 5, 0, 7); ctx.fill(); } ctx.fillStyle = '#ffcf3d'; ctx.beginPath(); ctx.arc(x, y - 20, 4, 0, 7); ctx.fill(); }
+  }
+  FACE = 1;
+  for (const [x, y, rx] of [[640, FLOOR + 120, 70], [820, FLOOR + 230, 80], [560, FLOOR + 330, 75]]) cel(ell(x, y, rx, rx * .32), '#e6e0ea', '#cfc6d6', '#a69bb2', 4, 0, -6);
+}
+
+// =====================================================================
+//  CÁMARA
+// =====================================================================
+function cam2d(t) {
+  const F = [2.5, 400, 1290], A = [1.55, 590, 1215], B = [1.7, 625, 1265], C1 = [1.28, 600, 1110], D = [1.6, 520, 1240], Ez = [2.0, 500, 1165], Z = [1.7, 520, 1200];
+  const mix = (a, b, p) => a.map((v, i) => lerp(v, b[i], p));
+  let c;
+  if (t < 1.85) c = F;
+  else if (t < 2.7) c = mix(F, A, E.io(seg(t, 1.85, 2.7)));
+  else if (t < 10.3) c = A;
+  else if (t < 11.1) c = mix(A, B, E.io(seg(t, 10.3, 11.1)));
+  else if (t < 13.6) c = B;
+  else if (t < 15.4) c = mix(B, C1, E.io(seg(t, 13.6, 15.4)));
+  else if (t < 19.35) c = C1;
+  else if (t < 20.2) c = mix(C1, D, E.io(seg(t, 19.35, 20.2)));
+  else if (t < 21.4) c = D;
+  else if (t < 22.3) c = mix(D, Ez, E.io(seg(t, 21.4, 22.3)));
+  else if (t < 23.55) c = Ez;
+  else c = mix(Ez, Z, E.io(seg(t, 23.55, 25)));
+  let shake = 0;
+  if (t > 8.9 && t < 9.2) shake = 10 * (1 - seg(t, 8.9, 9.2));
+  if (t > 19.75 && t < 20.1) shake = 9 * (1 - seg(t, 19.75, 20.1));
+  return { s: c[0], cx: c[1] + Math.sin(t * 70) * shake, cy: c[2] + Math.cos(t * 61) * shake };
+}
+
+// =====================================================================
+//  FOTOGRAMA
+// =====================================================================
+function drawWorld(t) {
+  const cam = cam2d(t);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#9fdcff'; ctx.fillRect(0, 0, W, H);
+  applyCam(cam, .72); ctx.drawImage(farCanvas, FAR.x0, FAR.y0);
+  applyCam(cam, .9); ctx.drawImage(nearCanvas, NEAR.x0, NEAR.y0);
+  applyCam(cam, 1);
+  drawGround();
+  drawCat(t, null);
+  drawMouse(t, gm => drawWand(t, gm));
+  drawBubbles(t);
+  // tortazo: hierba y estrellitas
+  if (t > 8.9 && t < 9.6) { const p = seg(t, 8.9, 9.6); for (let i = 0; i < 3; i++) { const a = t * 6 + i * 2.1; sparkle(PLANT_X + 60 + Math.cos(a) * 70, FLOOR - 120 + Math.sin(a) * 18, .8 * (1 - p * .5), 1 - p, '#ffd93d'); } }
+  for (const [tl, xx, yy, sc] of [[1.84, 360, FLOOR, .6], [5.2, 420, FLOOR, 1], [6.5, 345, FLOOR, 1], [7.8, 410, FLOOR, 1], [8.9, 470, FLOOR, 1.3], [19.75, 455, FLOOR, 1.4]]) {
+    const p = seg(t, tl, tl + .5);
+    if (p > 0 && p < 1) for (const s of [-1, 1]) for (let kk = 0; kk < 3; kk++) {
+      const r = (18 - kk * 3) * (1 + p * .6) * sc;
+      ctx.save(); ctx.globalAlpha = (1 - p) * .9; FACE = 1;
+      cel(ell(xx + s * (60 + E.o(p) * 110 + kk * 24) * sc, yy - 10 - kk * 8 - p * 20, r, r * .8), '#ffffff', '#e4efdc', null);
+      ctx.restore();
+    }
+  }
+  if (t > 13.3 && t < 14.4) { for (let i = 0; i < 3; i++) { const ph = (t * 1.8 + i / 3) % 1, h = toW(geom(M, SIM_M, t, MS), 0, -200); heart(h.x - 40 + i * 40, h.y - ph * 80, .7 * Math.sin(ph * Math.PI)); } }
+  if (t > 20.2 && t < 21.5) for (let i = 0; i < 5; i++) { const ph = ((t - 20.2) * .8 + i / 5) % 1; heart(470 + Math.sin(ph * 5 + i * 2) * 140, 1060 - ph * 220, (.7 + (i % 3) * .2) * Math.sin(ph * Math.PI)); }
+  // onomatopeyas
+  const n0 = memo('nose', () => catNose(1.6));
+  comic('POP!', n0.x + 75, n0.y - 150, t, 1.6, 2.25, 52, '#bfe9ff');
+  POPS.forEach((tp, j) => { const pp = popPoint(tp); comic('POP!', pp.x + (j % 2 ? -90 : 90), pp.y - 70, t, tp, tp + .6, 80, ['#ff9fc0', '#fff27a', '#9fe6ff'][j], j % 2 ? .1 : -.1); });
+  comic('POP!', G0.x + 60, G0.y - 333 - 280, t, 19.3, 20.1, 150, '#bfe9ff', -.06);
+  const pn = memo('pnose', () => pipNose(23.15));
+  comic('POP!', pn.x + 110, pn.y - 110, t, 23.15, 23.8, 90, '#ffd36b', .1);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function drawOverlay(c, t) {
+  c.save(); c.globalCompositeOperation = 'soft-light';
+  const lg = c.createRadialGradient(150, 250, 50, 150, 250, 1500); lg.addColorStop(0, 'rgba(255,240,190,.55)'); lg.addColorStop(1, 'rgba(255,240,190,0)');
+  c.fillStyle = lg; c.fillRect(0, 0, W, H); c.restore();
+  const vg = c.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * .75); vg.addColorStop(0, 'rgba(20,40,30,0)'); vg.addColorStop(1, 'rgba(20,40,30,.2)');
+  c.fillStyle = vg; c.fillRect(0, 0, W, H);
+  const flash = t > 19.3 && t < 19.45 ? 1 - seg(t, 19.3, 19.45) : 0;
+  if (flash > 0) { c.fillStyle = `rgba(255,255,255,${flash * .35})`; c.fillRect(0, 0, W, H); }
+  caption(c, '🫧 👀', t, 0, 1.55, { size: 150 });
+  if (t < 3.4) {
+    const a = 1 - seg(t, 3.2, 3.4), pulse = 1 + Math.sin(t * 9) * .05;
+    c.save(); c.globalAlpha = a; c.translate(W / 2, 400); c.scale(pulse, pulse);
+    c.beginPath(); c.roundRect(-95, -42, 190, 84, 42); c.fillStyle = '#ff4d6d'; c.fill(); c.lineWidth = 7; c.strokeStyle = INK; c.stroke();
+    c.font = '700 52px Fredoka, "Noto Color Emoji", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#fff'; c.fillText('👀 ⬇', 0, 3);
+    c.restore();
+  }
+  caption(c, '🫧 x1', t, 4.9, 6.15, { size: 130, highlight: true });
+  caption(c, '🫧 x2', t, 6.2, 7.45, { size: 130, highlight: true });
+  caption(c, '🫧 x3', t, 7.5, 8.5, { size: 130, highlight: true });
+  caption(c, 'OOPS 😵', t, 8.95, 10.3, { size: 130, rot: -.04 });
+  caption(c, '😤', t, 10.5, 11.3, { size: 150 });
+  caption(c, '😏 🫧', t, 11.4, 13.25, { size: 140 });
+  caption(c, 'WOW! 🐱🫧', t, 14.3, 16.45, { size: 120, highlight: true });
+  caption(c, '😰 🆘', t, 16.75, 19.25, { size: 140 });
+  caption(c, '😂 ❤️', t, 20.2, 21.5, { size: 140 });
+  caption(c, '👀 . . .', t, 21.8, 23.1, { size: 110 });
+  if (t >= 23.6) {
+    const p = E.back(seg(t, 23.6, 23.9));
+    c.save(); c.translate(W / 2, 290); c.scale(p, p); brandTitle(c, 0, 0, 150, -.03); c.restore();
+    if (t > 23.95) caption(c, 'PART 3 ⏳', t, 23.95, 25.01, { size: 70, y: 440 });
+  }
+}
+
+bakeGarden();
+startEpisode();
+</script>
+</body>
+</html>
