@@ -1,5 +1,7 @@
 # Mochi & Pip — Episodios 3 a 12 (listos para subir)
 
+**Etiquetas fijas (todos los vídeos):** `mochi and pip, cartoon, animation, funny cat, animated shorts, cat cartoon, comedy animation` — en cada vídeo se cambian 2-3 por lo que pasa de verdad en pantalla. Nunca #games ni #gameplay.
+
 Orden recomendado (alterna 3D / 2D original para la prueba A/B). Sube **uno cada día**, siempre a la misma hora.
 En todos: **Público** · **"Sí, es contenido creado para niños"** · Categoría **Cine y animación** · Lista **Mochi & Pip**.
 
@@ -110,6 +112,24 @@ New Mochi & Pip cartoon every week ❤️
 
 Generarlo: `python3 audio/musica_ep9.py && node render.js --page ep9.html --out ep9_pancakes.mp4 --audio salida/musica_ep9.wav`
 (sin texto en pantalla; el último fotograma es idéntico al primero, así que el Short se repite sin corte).
+
+---
+
+## Ep. 9 (versión alternativa) · 2D · "Pancake" 🥞 — `salida/ep9_pancake.mp4`
+**Título:** `Mochi got eaten by his pancake 🥞🌯😹 #shorts`
+**Descripción:**
+```
+Pip made a tiny, perfect pancake 🥞 Mochi wanted a BIGGER one... so he flipped a giant pancake sky-high and it landed right on him! 🌯😹 And Pip ends up with a butter mustache 🧈🐭
+Watch until the end! 👀
+
+New Mochi & Pip cartoon every week ❤️
+
+#shorts #cartoon #animation #cat #kids #funny #pancakes
+```
+**Etiquetas:** `mochi and pip, cartoon, animation, funny cat, pancakes, pancake flip, breakfast`
+**Títulos traducidos:** ES `A Mochi se lo comió su tortita 🥞🌯😹 #shorts` · PT `Mochi foi comido pela panqueca 🥞🌯😹 #shorts` · FR `Mochi s'est fait manger par sa crêpe 🥞🌯😹 #shorts` · HI `मोची को उसके पैनकेक ने खा लिया 🥞🌯😹 #shorts` · ID `Mochi dimakan pancake-nya 🥞🌯😹 #shorts`
+
+Generarlo: `python3 audio/musica_ep9_2d.py && node render.js --page ep9_2d.html --out ep9_pancake.mp4 --audio salida/musica_ep9_2d.wav`
 
 ---
 

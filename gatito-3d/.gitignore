@@ -1,4 +1,3 @@
 node_modules/
-salida/*
-!salida/gatito3d_y_la_galleta.mp4
-!salida/mochi_pip_ep1_global.mp4
+# Los vídeos renderizados no se suben al repo: se guardan en Google Drive
+salida/
