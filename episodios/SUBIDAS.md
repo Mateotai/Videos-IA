@@ -1,4 +1,4 @@
-# Mochi & Pip — Episodios 3 a 11 (listos para subir)
+# Mochi & Pip — Episodios 3 a 12 (listos para subir)
 
 Orden recomendado (alterna 3D / 2D original para la prueba A/B). Sube **uno cada día**, siempre a la misma hora.
 En todos: **Público** · **"Sí, es contenido creado para niños"** · Categoría **Cine y animación** · Lista **Mochi & Pip**.
@@ -158,6 +158,28 @@ Generarlo: `python3 audio/musica_ep11.py && node render.js --page ep11.html --ou
 
 ---
 
+## Ep. 12 · 3D · "Jelly" 🟢 — `salida/ep12_jelly.mp4` (35 s)
+Gancho: Mochi agachado sobre una gelatina gigante… ¡BOING! sale disparado a cámara lenta; rebobina (◀◀) y cuenta la historia. Letrero "Mochi & Pip" al final.
+**Título:** `Mochi bounced TOO high on the giant jelly 🟢😹 #shorts`
+**Descripción:**
+```
+Pip bounces on a tiny jelly 🟢 Mochi wants a GIANT one... and bounces a little TOO high 😹
+Wait for the slow motion! 👀🐱🐭
+
+New Mochi & Pip cartoon every week ❤️
+
+Music: "Pixel Peeker Polka - faster" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+#shorts #cartoon #animation #cat #kids #funny #jelly
+```
+**Títulos traducidos:** ES `Mochi botó DEMASIADO alto en la gelatina gigante 🟢😹 #shorts` · PT `Mochi pulou ALTO DEMAIS na gelatina gigante 🟢😹 #shorts` · FR `Mochi a rebondi TROP haut sur la gelée géante 🟢😹 #shorts` · HI `मोची विशाल जेली पर बहुत ऊँचा उछला 🟢😹 #shorts` · ID `Mochi memantul TERLALU tinggi di jeli raksasa 🟢😹 #shorts`
+
+Generarlo: `python3 audio/musica_ep12.py && node render.js --page ep12.html --out ep12_jelly.mp4 --audio salida/musica_ep12.wav`
+
+---
+
 ## Tabla para la prueba A/B (rellénala a las 48 h y a los 7 días)
 | Ep | Estilo | Fecha/hora | Vistas 48 h | Vistas 7 d | % "Se ha visto" | Suscriptores ganados |
 |---|---|---|---|---|---|---|
@@ -172,5 +194,6 @@ Generarlo: `python3 audio/musica_ep11.py && node render.js --page ep11.html --ou
 | 9 | 3D | | | | | |
 | 10 | 3D | | | | | |
 | 11 | 3D | | | | | |
+| 12 | 3D | | | | | |
 
 Cuando tengas los números, pásamelos y te digo qué estilo gana y cómo seguir.
