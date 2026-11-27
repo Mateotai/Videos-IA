@@ -1,4 +1,4 @@
-# Mochi & Pip — Episodios 3 a 13 (listos para subir)
+# Mochi & Pip — Episodios 3 a 14 (listos para subir)
 
 Orden recomendado (alterna 3D / 2D original para la prueba A/B). Sube **uno cada día**, siempre a la misma hora.
 En todos: **Público** · **"Sí, es contenido creado para niños"** · Categoría **Cine y animación** · Lista **Mochi & Pip**.
@@ -202,6 +202,28 @@ Generarlo: `python3 audio/musica_ep13.py && node render.js --page ep13.html --ou
 
 ---
 
+## Ep. 14 · 3D · "Christmas tree" 🎄 — `salida/ep14_christmas.mp4` (35 s) · salón de Navidad
+Gancho: el árbol cae a cámara lenta con Mochi abrazado a la estrella y las bolas volando; rebobina (◀◀). Letrero "Mochi & Pip" al final.
+**Título:** `Cat vs Christmas tree… guess who won 🎄😹 #shorts`
+**Descripción:**
+```
+Pip decorates the Christmas tree 🎄 Mochi wants to help... from INSIDE the tree 😹🐱🐭
+Wait for the slow motion! 👀 Merry Christmas! 🎅✨
+
+New Mochi & Pip cartoon every week ❤️
+
+Music: "Jingle Bells" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+#shorts #cartoon #animation #cat #kids #funny #christmas #christmastree
+```
+**Títulos traducidos:** ES `Gato vs árbol de Navidad… adivina quién ganó 🎄😹 #shorts` · PT `Gato vs árvore de Natal… adivinha quem ganhou 🎄😹 #shorts` · FR `Chat vs sapin de Noël… devinez qui a gagné 🎄😹 #shorts` · HI `बिल्ली vs क्रिसमस ट्री… कौन जीता? 🎄😹 #shorts` · ID `Kucing vs pohon Natal… tebak siapa menang 🎄😹 #shorts`
+
+Generarlo: `python3 audio/musica_ep14.py && node render.js --page ep14.html --out ep14_christmas.mp4 --audio salida/musica_ep14.wav`
+
+---
+
 ## Tabla para la prueba A/B (rellénala a las 48 h y a los 7 días)
 | Ep | Estilo | Fecha/hora | Vistas 48 h | Vistas 7 d | % "Se ha visto" | Suscriptores ganados |
 |---|---|---|---|---|---|---|
@@ -218,5 +240,6 @@ Generarlo: `python3 audio/musica_ep13.py && node render.js --page ep13.html --ou
 | 11 | 3D | | | | | |
 | 12 | 3D | | | | | |
 | 13 | 3D playa | | | | | |
+| 14 | 3D Navidad | | | | | |
 
 Cuando tengas los números, pásamelos y te digo qué estilo gana y cómo seguir.
