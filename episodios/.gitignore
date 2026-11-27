@@ -2,3 +2,4 @@ node_modules/
 salida/*
 !salida/ep*_*.mp4
 salida/*_sin_audio.mp4
+__pycache__/
