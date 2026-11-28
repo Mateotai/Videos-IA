@@ -17,7 +17,7 @@ HANG, POUNCE, BONKP = 1.55, 7.45, 7.95
 GIVE, CLIMB0, CLIMB1, POP, PLACE = 11.25, 11.7, 13.6, 13.75, 14.35
 FREEZE, FALL = 19.9, 20.5
 SL0, SL1 = FALL + .3, 23.6
-OUTB, PLUG, EARO = 26.6, 28.7, 29.9
+OUTB, PLUG, EARO = 26.6, 28.6, 29.9
 def rate(s):
     return 1 if s < SL0 else (1 - .8 * (s - SL0) / .15 if s < SL0 + .15 else (.2 if s < SL1 else (.2 + .8 * (s - SL1) / .15 if s < SL1 + .15 else 1)))
 def first(target):

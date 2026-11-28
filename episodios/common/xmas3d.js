@@ -46,7 +46,7 @@ const room3 = new THREE.Group(); scene.add(room3);
 const floorG = new THREE.PlaneGeometry(20, 16); floorG.rotateX(-Math.PI / 2); floorG.translate(0, 0, 2); { const p = floorG.attributes.position, uv = floorG.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 4, p.getZ(i) / 4); }
 const floor3 = new THREE.Mesh(floorG, new THREE.MeshStandardMaterial({ map: planks, roughness: .55 })); floor3.receiveShadow = true; room3.add(floor3);
 const rugTex = canvasTex(512, 512, (c, w, h) => { c.translate(256, 256); for (let r = 250; r > 0; r -= 26) { c.fillStyle = (r / 26 | 0) % 2 ? '#b8323a' : '#f4ead8'; c.beginPath(); c.arc(0, 0, r, 0, 7); c.fill(); } c.fillStyle = '#2f6d4a'; for (let i = 0; i < 12; i++) { c.rotate(Math.PI / 6); c.beginPath(); c.arc(0, -150, 14, 0, 7); c.fill(); } });
-room3.add(mesh(new THREE.CircleGeometry(2.6, 64), new THREE.MeshStandardMaterial({ map: rugTex, roughness: .95 }), { y: .006, z: -1.2, x: -.3, rx: -Math.PI / 2, shadow: false }));
+room3.add(mesh(new THREE.CircleGeometry(2.6, 64), new THREE.MeshStandardMaterial({ map: rugTex, roughness: .95 }), { y: .006, z: -1.5, x: .3, rx: -Math.PI / 2, shadow: false }));
 function wallPlane(w, h, x, y, z, ry, material) { const g = new THREE.PlaneGeometry(w, h), p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 2, p.getY(i) / 2); const m = new THREE.Mesh(g, material); m.position.set(x, y, z); m.rotation.y = ry; m.receiveShadow = true; return m; }
 const WALL_M = new THREE.MeshStandardMaterial({ map: wallpaper, roughness: .9 });
 ROOM_BG.add(wallPlane(20, 9, 0, 4.5, -4.5, 0, WALL_M)); ROOM_BG.add(wallPlane(16, 9, -7, 4.5, 2, Math.PI / 2, WALL_M)); ROOM_BG.add(wallPlane(16, 9, 7, 4.5, 2, -Math.PI / 2, WALL_M));
@@ -66,7 +66,7 @@ const WIN = V3(-3.3, 2.7, -4.45);
 }
 const snowP = (() => { const a = []; for (let i = 0; i < 70; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTex, color: '#ffffff', transparent: true, depthWrite: false })); ROOM_BG.add(sp); a.push(sp); } return a; })();
 // chimenea
-const FIRE = V3(2.8, 0, -4.1);
+const FIRE = V3(3.7, 0, -4.1);
 const fireplace = new THREE.Group(); fireplace.position.copy(FIRE); scene.add(fireplace);
 {
   const B = new THREE.MeshStandardMaterial({ map: bricks, roughness: .9 });
@@ -85,13 +85,17 @@ const fireplace = new THREE.Group(); fireplace.position.copy(FIRE); scene.add(fi
 const flames = Array.from({ length: 10 }, () => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTex, color: '#ffaa3a', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); scene.add(sp); return sp; });
 const candleF = [-1.2, 1.2].map(x => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTex, color: '#ffcf6a', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); sp.position.set(FIRE.x + x, 2.7, FIRE.z); sp.scale.setScalar(.18); scene.add(sp); return sp; });
 // enchufe
-const SOCKET = V3(.9, .35, -4.42);
-scene.add(mesh(new THREE.BoxGeometry(.22, .3, .04), mat('#f4f0ea', .4), { x: SOCKET.x, y: SOCKET.y, z: SOCKET.z }));
-for (const s of [-1, 1]) scene.add(mesh(new THREE.CylinderGeometry(.018, .018, .02, 8), mat('#2b2233', .5), { x: SOCKET.x + s * .04, y: SOCKET.y, z: SOCKET.z + .03, rx: Math.PI / 2, shadow: false }));
+// regleta en el suelo (delante, a la izquierda): aquí se enchufan las luces
+const STRIP = V3(-.25, 0, 1.75), SOCKET = V3(STRIP.x + .12, .07, STRIP.z);
+{ const g = new THREE.Group(); g.position.copy(STRIP); g.rotation.y = .25; scene.add(g);
+  g.add(mesh(new THREE.BoxGeometry(.62, .07, .18), mat('#f4f0ea', .4), { y: .035 }));
+  for (let i = 0; i < 3; i++) { g.add(mesh(new THREE.CylinderGeometry(.045, .045, .01, 16), mat('#e2ddd4', .4), { x: -.18 + i * .16, y: .072, shadow: false })); for (const s of [-1, 1]) g.add(mesh(new THREE.BoxGeometry(.012, .012, .03), mat('#2b2233', .5), { x: -.18 + i * .16 + s * .018, y: .076, shadow: false })); }
+  g.add(mesh(SPH, mat('#ff3b4f', .3, { emissive: '#ff3b4f', emissiveIntensity: 1.2 }), { x: .26, y: .075, sx: .02, sy: .01, sz: .02, shadow: false }));
+  const back = new THREE.CatmullRomCurve3([V3(-.31, .03, 0), V3(-.6, .02, -.3), V3(-.7, .02, -1.5), V3(-.4, .02, -3.0)]); g.add(mesh(new THREE.TubeGeometry(back, 30, .015, 5), mat('#f4f0ea', .5), { shadow: false })); }
 ROOM_BG.traverse(o => o.layers.set(1));
 
 // ---- árbol de Navidad ----
-const TREE = V3(-.7, 0, -1.6), TREE_H = 4.65;
+const TREE = V3(.3, 0, -2.0), TREE_H = 4.65;
 const treeR = y => y < .55 ? 0 : 1.65 * Math.max(0, 1 - (y - .55) / 4.1) + .08;
 const tree = new THREE.Group(); tree.position.copy(TREE); scene.add(tree);
 const ORN = [], BULBS = [];
@@ -133,7 +137,7 @@ const star = new THREE.Group();
   scene.add(star);
 }
 // regalos
-const GIFTS = V3(1.55, 0, -1.0);
+const GIFTS = V3(-2.3, 0, -3.4);     // regalos bajo la ventana (a la izquierda del árbol, contra la pared)
 const giftBoxes = [];
 function giftBox(w, h, d, c, rib) {
   const g = new THREE.Group(); g.add(mesh(new THREE.BoxGeometry(w, h, d), gloss(c, { roughness: .35 }), { y: h / 2 }));
@@ -141,11 +145,11 @@ function giftBox(w, h, d, c, rib) {
   for (const s of [-1, 1]) g.add(mesh(new THREE.TorusGeometry(w * .14, w * .045, 8, 16), mat(rib, .35), { x: s * w * .12, y: h + w * .1, rz: s * .6, ry: .3 }));
   scene.add(g); return g;
 }
-for (const [x, z, w, h, d, c, rib, ry] of [[-.5, .1, .9, .7, .8, '#e8283c', '#ffd23f', .2], [.45, -.15, .7, .5, .7, '#2f8cff', '#ffffff', -.3], [.05, .55, .55, .4, .55, '#ffd23f', '#e8283c', .5], [-.25, -.55, .6, .9, .6, '#2f9d5a', '#ffd23f', .1], [.8, .5, .45, .35, .45, '#ff6fb8', '#ffffff', -.4], [-.9, .6, .5, .45, .5, '#8f4fff', '#ffd23f', .7]]) {
+for (const [x, z, w, h, d, c, rib, ry] of [[-.55, .1, .8, .65, .7, '#e8283c', '#ffd23f', .2], [.35, -.05, .65, .5, .6, '#2f8cff', '#ffffff', -.3], [.0, .62, .5, .38, .5, '#ffd23f', '#e8283c', .5], [-1.15, -.1, .55, .8, .55, '#2f9d5a', '#ffd23f', .1], [-.6, .75, .42, .32, .42, '#ff6fb8', '#ffffff', -.4], [.75, .55, .45, .4, .45, '#8f4fff', '#ffd23f', .7]]) {
   const b = giftBox(w, h, d, c, rib); b.position.set(GIFTS.x + x, 0, GIFTS.z + z); b.rotation.y = ry; b.userData = { home: b.position.clone(), ry, h, i: giftBoxes.length }; giftBoxes.push(b);
 }
 // caja grande abierta (Mochi acaba dentro)
-const BIGBOX = V3(1.55, 0, -.35);
+const BIGBOX = V3(-2.6, 0, .3);
 const bigBox = new THREE.Group(); bigBox.position.copy(BIGBOX); scene.add(bigBox);
 { const BM = gloss('#e8283c', { roughness: .35, side: THREE.DoubleSide }), RB = mat('#ffd23f', .35);
   for (const [x, z, w, d] of [[0, .6, 1.25, .04], [0, -.6, 1.25, .04], [.6, 0, .04, 1.25], [-.6, 0, .04, 1.25]]) bigBox.add(mesh(new THREE.BoxGeometry(w, .95, d), BM, { x, y: .475, z }));
@@ -163,3 +167,11 @@ function updateXmas(t) {
   candleF.forEach((c, i) => { c.scale.setScalar(.16 + .03 * Math.sin(t * 17 + i * 2)); c.material.opacity = .8; });
   snowP.forEach((sp, i) => { const ph = (t * (.08 + rnd(i) * .05) + rnd(i + 5)) % 1; sp.position.set(WIN.x - 1.15 + rnd(i + 1) * 2.3 + Math.sin(t * .8 + i) * .08, WIN.y + 1.35 - ph * 2.75, WIN.z - .3 - rnd(i + 2) * 1.0); sp.scale.setScalar(.04 + rnd(i + 3) * .05); sp.material.opacity = .9; });
 }
+
+// ---- huellas de colisión (para comprobar el maquetado) ----
+const OBSTACLES = () => [
+  ...giftBoxes.map(b => ({ name: 'regalo', x: b.position.x, z: b.position.z, r: .42 })),
+  { name: 'caja grande', x: BIGBOX.x, z: BIGBOX.z, r: .66 },
+  { name: 'chimenea', x: FIRE.x, z: FIRE.z + .1, r: 1.45 },
+  { name: 'regleta', x: STRIP.x, z: STRIP.z, r: .3 },
+];
